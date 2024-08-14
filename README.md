@@ -5,3 +5,6 @@
 - Statistics
 - Statistical Models and Methods
 - Optimization
+
+Directories to sort
+- modules
