@@ -1,2 +1,7 @@
-# ug_university
-Maths undergraduate coding assignments
+## Maths undergraduate coding assignments
+
+#### Modules which involved coding
+- Applied Mathematics
+- Statistics
+- Statistical Models and Methods
+- Optimization
