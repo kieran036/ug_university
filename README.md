@@ -1,4 +1,4 @@
-## Maths undergraduate coding assignments
+## Undergraduate coding assignments
 
 #### Modules which involved coding
 - Applied Mathematics
