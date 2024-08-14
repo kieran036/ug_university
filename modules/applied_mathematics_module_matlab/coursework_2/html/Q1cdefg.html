@@ -1,0 +1,290 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Q1cdefg</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-03-18"><meta name="DC.source" content="Q1cdefg.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">%Q1c%</span>
+syms <span class="string">x(t)</span> <span class="string">y(t)</span> <span class="string">a</span> <span class="string">b</span>
+S = dsolve(diff(x,t) == a + y - (b + 1)*x, diff(y,t) == b*x - y, x(0) == 0, y(0) == 0);
+<span class="comment">%Finding symbolic solution to the system of equations%</span>
+
+
+<span class="comment">%Q1d%</span>
+disp(simplify(S.x))
+disp(simplify(S.y))
+<span class="comment">%Simplifying the expressions found in Q1c%</span>
+
+
+<span class="comment">%Q1e%</span>
+solx = simplify(S.x); soly = simplify(S.y);
+Mp = 0.5*(- b - 2 + sqrt(b*(b+4))); Mn = 0.5*(- b - 2 - sqrt(b*(b+4)));
+Bp = (a*(1+ Mn))/(Mp - Mn); Bn = (a*(1+ Mp))/(Mn - Mp);
+ExactX = Bp*exp(Mp*t) + Bn*exp(Mn*t) + a;
+disp(simplify(solx-ExactX))
+<span class="comment">%Displaying the accuracy of the Euler method against the exact solution by</span>
+<span class="comment">%subtracting solution S from the exact solution found in Q1a which does</span>
+<span class="comment">%indeed simplify to zero%</span>
+
+
+<span class="comment">%Q1f%</span>
+[Ex, Ey, Et] = Eulersol(1, -1, 50, 0.2);
+<span class="comment">%Since dt=0.2, tmax=10 and tmax=N*dt, this implies that N=50%</span>
+
+
+<span class="comment">%Q1g%</span>
+figure(1); clf(1)
+hold <span class="string">on</span>
+plot(Et, Ex, <span class="string">'k:'</span>)
+title(<span class="string">'Comparison of Euler and exact solutions'</span>), xlabel(<span class="string">'t'</span>), ylabel(<span class="string">'x'</span>)
+<span class="comment">%Plot of the Euler approximation method%</span>
+
+ExactX2 = zeros (1, 50 + 1);
+<span class="keyword">for</span> i = 1:50 + 1
+    ExactX2(i) = subs(solx, [t, a, b], [Et(i), 1, -1]);
+<span class="keyword">end</span>
+plot (Et, ExactX2, <span class="string">'k'</span>)
+<span class="comment">%Exact solution plot%</span>
+legend (<span class="string">'Euler method solution'</span>, <span class="string">'Exact solution'</span>)
+hold <span class="string">off</span>
+<span class="comment">%For the given input values and initial conditions, the Euler approximation</span>
+<span class="comment">%method provides a good approximation of x if compared against the exact</span>
+<span class="comment">%value with a maximum of approximately 0.1 off from the exact value of x.</span>
+<span class="comment">%This can only be seen for a specific range of t that is used in the plot</span>
+<span class="comment">%due to the given input values in Q1f. Despite the fact the plot of the</span>
+<span class="comment">%approximations' extremas are more defined than the exact solution, the</span>
+<span class="comment">%plot of Euler's method holds a very similar shape to that of the exact</span>
+<span class="comment">%solution, showing a degree of accuracy to the method of approximation. In</span>
+<span class="comment">%addition, as t tends to tmax, which in this case is 10, the Euler</span>
+<span class="comment">%approximations tends closer to the exact values, supporting the prediction</span>
+<span class="comment">%that for large values of t, the Euler method of approximation will tend</span>
+<span class="comment">%closer to the exact value of the solution. Furthermore, as dt tends closer</span>
+<span class="comment">%to zero, Euler's method of approximation tends towards the exact solution</span>
+<span class="comment">%for x so dt should be made as small as possible for a more accurate</span>
+<span class="comment">%solution.%</span>
+</pre><pre class="codeoutput">-(2*a*b*exp(-(t*(b - (b*(b + 4))^(1/2) + 2))/2)*(b + 4) - 4*a*b*(b + 4) + 2*a*b*exp(-(t*(b - (b*(b + 4))^(1/2) + 2))/2)*(b*(b + 4))^(1/2) + 2*a*b*exp(-(t*(b + (b*(b + 4))^(1/2) + 2))/2)*(b + 4) - 2*a*b*exp(-(t*(b + (b*(b + 4))^(1/2) + 2))/2)*(b*(b + 4))^(1/2))/(4*b*(b + 4))
+ 
+- (2*a*b*exp(-(t*(b - (b*(b + 4))^(1/2) + 2))/2)*(exp((t*(b - (b*(b + 4))^(1/2) + 2))/2) - 1))/(4*b - b*(b*(b + 4))^(1/2) + b^2 - 2*(b*(b + 4))^(1/2)) - (2*a*b*exp(-(t*(b + (b*(b + 4))^(1/2) + 2))/2)*(exp((t*(b + (b*(b + 4))^(1/2) + 2))/2) - 1))/(4*b + b*(b*(b + 4))^(1/2) + b^2 + 2*(b*(b + 4))^(1/2))
+ 
+0
+ 
+  Columns 1 through 7
+
+         0    0.2000    0.4000    0.5920    0.7696    0.9280    1.0639
+
+  Columns 8 through 14
+
+    1.1756    1.2623    1.3247    1.3641    1.3826    1.3829    1.3678
+
+  Columns 15 through 21
+
+    1.3404    1.3038    1.2609    1.2144    1.1668    1.1201    1.0761
+
+  Columns 22 through 28
+
+    1.0361    1.0010    0.9715    0.9479    0.9301    0.9180    0.9111
+
+  Columns 29 through 35
+
+    0.9089    0.9106    0.9157    0.9233    0.9328    0.9434    0.9546
+
+  Columns 36 through 42
+
+    0.9658    0.9766    0.9866    0.9956    1.0033    1.0096    1.0145
+
+  Columns 43 through 49
+
+    1.0181    1.0203    1.0214    1.0215    1.0207    1.0192    1.0171
+
+  Columns 50 through 51
+
+    1.0148    1.0121
+
+  Columns 1 through 7
+
+         0         0   -0.0400   -0.1120   -0.2080   -0.3203   -0.4419
+
+  Columns 8 through 14
+
+   -0.5663   -0.6881   -0.8030   -0.9073   -0.9987   -1.0755   -1.1369
+
+  Columns 15 through 21
+
+   -1.1831   -1.2146   -1.2324   -1.2381   -1.2334   -1.2200   -1.2001
+
+  Columns 22 through 28
+
+   -1.1753   -1.1474   -1.1181   -1.0888   -1.0606   -1.0345   -1.0112
+
+  Columns 29 through 35
+
+   -0.9912   -0.9747   -0.9619   -0.9527   -0.9468   -0.9440   -0.9439
+
+  Columns 36 through 42
+
+   -0.9460   -0.9500   -0.9553   -0.9616   -0.9684   -0.9753   -0.9822
+
+  Columns 43 through 49
+
+   -0.9887   -0.9945   -0.9997   -1.0040   -1.0075   -1.0102   -1.0120
+
+  Columns 50 through 51
+
+   -1.0130   -1.0134
+
+  Columns 1 through 7
+
+         0    0.2000    0.4000    0.6000    0.8000    1.0000    1.2000
+
+  Columns 8 through 14
+
+    1.4000    1.6000    1.8000    2.0000    2.2000    2.4000    2.6000
+
+  Columns 15 through 21
+
+    2.8000    3.0000    3.2000    3.4000    3.6000    3.8000    4.0000
+
+  Columns 22 through 28
+
+    4.2000    4.4000    4.6000    4.8000    5.0000    5.2000    5.4000
+
+  Columns 29 through 35
+
+    5.6000    5.8000    6.0000    6.2000    6.4000    6.6000    6.8000
+
+  Columns 36 through 42
+
+    7.0000    7.2000    7.4000    7.6000    7.8000    8.0000    8.2000
+
+  Columns 43 through 49
+
+    8.4000    8.6000    8.8000    9.0000    9.2000    9.4000    9.6000
+
+  Columns 50 through 51
+
+    9.8000   10.0000
+
+</pre><img vspace="5" hspace="5" src="Q1cdefg_01.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%Q1c%
+syms x(t) y(t) a b
+S = dsolve(diff(x,t) == a + y - (b + 1)*x, diff(y,t) == b*x - y, x(0) == 0, y(0) == 0);
+%Finding symbolic solution to the system of equations%
+
+
+%Q1d%
+disp(simplify(S.x))
+disp(simplify(S.y))
+%Simplifying the expressions found in Q1c%
+
+
+%Q1e%
+solx = simplify(S.x); soly = simplify(S.y);
+Mp = 0.5*(- b - 2 + sqrt(b*(b+4))); Mn = 0.5*(- b - 2 - sqrt(b*(b+4)));
+Bp = (a*(1+ Mn))/(Mp - Mn); Bn = (a*(1+ Mp))/(Mn - Mp);
+ExactX = Bp*exp(Mp*t) + Bn*exp(Mn*t) + a;
+disp(simplify(solx-ExactX))
+%Displaying the accuracy of the Euler method against the exact solution by
+%subtracting solution S from the exact solution found in Q1a which does
+%indeed simplify to zero%
+
+
+%Q1f%
+[Ex, Ey, Et] = Eulersol(1, -1, 50, 0.2);
+%Since dt=0.2, tmax=10 and tmax=N*dt, this implies that N=50%
+
+
+%Q1g% 
+figure(1); clf(1)
+hold on
+plot(Et, Ex, 'k:')
+title('Comparison of Euler and exact solutions'), xlabel('t'), ylabel('x')
+%Plot of the Euler approximation method%
+
+ExactX2 = zeros (1, 50 + 1);
+for i = 1:50 + 1
+    ExactX2(i) = subs(solx, [t, a, b], [Et(i), 1, -1]);
+end
+plot (Et, ExactX2, 'k')
+%Exact solution plot%
+legend ('Euler method solution', 'Exact solution')
+hold off
+%For the given input values and initial conditions, the Euler approximation
+%method provides a good approximation of x if compared against the exact 
+%value with a maximum of approximately 0.1 off from the exact value of x.
+%This can only be seen for a specific range of t that is used in the plot
+%due to the given input values in Q1f. Despite the fact the plot of the
+%approximations' extremas are more defined than the exact solution, the
+%plot of Euler's method holds a very similar shape to that of the exact
+%solution, showing a degree of accuracy to the method of approximation. In
+%addition, as t tends to tmax, which in this case is 10, the Euler
+%approximations tends closer to the exact values, supporting the prediction
+%that for large values of t, the Euler method of approximation will tend
+%closer to the exact value of the solution. Furthermore, as dt tends closer
+%to zero, Euler's method of approximation tends towards the exact solution
+%for x so dt should be made as small as possible for a more accurate
+%solution.%
+##### SOURCE END #####
+--></body></html>

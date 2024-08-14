@@ -1,0 +1,343 @@
+---
+title: "Zhang_Heng and Ptolemy"
+author: "Kieran Patel"
+date: "15/11/2017"
+output: html_document
+---
+```{r}
+library(lpSolve)
+```
+
+
+####Zhang Heng Coursework####
+
+
+##(i)
+
+The dual problem is when the problem is changed into the lagrangian and maximised subject to lambda.
+
+##(ii)
+
+min $b^T \lambda  $ s.t. $A^T \lambda  \geq c$ for $\lambda  \geq 0$
+
+##(iii)
+```{r}
+#From p1-14
+max.or.min <- "max"
+c <- c(5, 10)
+b <- c(4, 6)
+A <- matrix(c(1, 2, 3, 1), nrow = length(c), byrow = TRUE)
+#A = constraint matrix, b = rhs, c = obj, lambda = vector of lambdas
+var <- length(c)
+ineqs <- rep("<=", var)
+
+dual.function <- function (A, b, c, ineqs, max.or.min){
+  A. <- t(A)
+  c. <- b
+  b. <- c
+  
+  if (all(ineqs == rep("<=", var)))
+    ineqs. <- rep(">=", var)
+    else("Problem does not match the question")
+  if (max.or.min == "max")
+  max.or.min. <- "min"
+    else("Problem does not match the question")
+  
+return( list (New.A = A., New.b = b., New.c = c., New.ineqs = ineqs., New.max.or.min = max.or.min.))
+  return(A., b., c., ineqs., max.or.min.)}
+
+W <- dual.function(A, b, c, ineqs, max.or.min)
+W
+
+#From p1-17
+c <- c(1, 2)
+b <- c(4, 6, 5, 5)
+A <- matrix(c(1, 2, 1, 1, 3, 2, 2, 3), ncol = length(c), byrow = TRUE)
+V <- dual.function(A, b, c, ineqs, max.or.min)
+V
+```
+
+rep.of.lambda <- rep ($A^T \lambda  \geq c$, var)
+lambda <- c(1: var)
+A.lambda <- t(A) #%*% lambda
+ineq <- rep(">=", var)
+dual <- cbind(A.lambda, ineq, x)
+
+My initial thought process was that we needed to replicate the problem so that the output looked the same as that in the notes but after rereading the coursework we were just being asked to change the primal problem into dual problem but making R make this change.
+
+
+I then typed this code for my loop if (ineqs = rep(">=", var)), which kept saying an error and I could not decipher the error until I read the hints sheet again and realised that a double equal, ==, asks R to determine if the statement is true or not.
+
+I attempted to use the all function to match my two vectors so the condition is satisfied with (all(ineqs == rep("<=", var), na.rm = FALSE) but this lead to an error. So i then tried all(ineqs) == all(rep("<=", var)), which gave another error. I then tried  if (all(ineqs == rep("<=", var)){ but pick up '{' as an error. I managed to sort the errors after researching examples of the all function.
+
+
+##(iv)
+```{r}
+#I have already set up variables in (iii) so that I can run my code and check it.
+#Primal problem optimal value
+primal.opt <- lp(max.or.min, c, A, ineqs, b)
+primal.opt
+
+#These are the dual problem's parameters
+W$New.c
+W$New.A
+W$New.ineqs
+W$New.b
+W$New.max.or.min
+
+dual.opt <- lp(W$New.max.or.min, W$New.c, W$New.A, W$New.ineqs, W$New.b)
+dual.opt
+```
+
+I initially typed, lp("min", New.c, New.A, New.ineqs, New.b), but then remembered that these variables are only exist within the function in (iii).
+
+I then try and find the dual problem's parameters with this code lp("min", c., A., ineqs., b.), but an error appears again. So I researched into how to store nd recall variables within a function as I recalled it being mentioned in the computing class and after googling I found it to be labeling variables with '<<-'. After speaking to the lecturer, I found this is bad programming and I could not recall my output simply because I was not labeling my output so I replaced the '<<-' to '<-'.
+
+Most of the code for this question has already been done in (iii) and the previous coursework.
+
+I then tried to create a for loop with {if (primal.opt = dual.opt)
+  "Optimals are the same"
+  else "Optimals are not the same"}
+but realised that because the outputs for the lp function are text and numbers that the if loop is too difficult.
+
+Both the optimal value for the primal and dual are the same as expected.
+
+##(v)
+```{r}
+primal.problem <- lp(max.or.min, c, A, ineqs, b)$solution
+primal.problem
+{if (all((A%*%primal.problem) == b))
+  "Constraint is tight for the primal problem"
+else "Constraint is not tight for the primal problem"}
+
+dual.problem <- lp(W$New.max.or.min, W$New.c, W$New.A, W$New.ineqs, W$New.b)$solution
+dual.problem
+{if (all((W$New.A%*%dual.problem) == W$New.b))
+  "Constraint is tight for the dual problem"
+else "Constraint is not tight for the dual problem"}
+```
+
+The output showed a similar error to earlier when I coded 'if ((primal.problem*A) <= b)
+  "Complementary Slackness holds"
+else "Complementary Slackness does not hold"'. So I included the 'all' function. But I am still having issues with the 'else' function.
+I then tried to create a complete loop, realising that the else appeared disjointed from the 'if' loop.
+
+I then realise I did the matrix multiplication the wrong way so I wasn't getting the right output. I then realised I was not using the matrix multiplication symbol.
+
+##(vi)
+```{r}
+max.or.min <- "min"
+c <- c(5, 10)
+b <- c(4, 6)
+A <- matrix(c(1, 2, 3, 1), nrow = length(c), byrow = TRUE)
+#A = constraint matrix, b = rhs, c = obj, lambda = vector of lambdas
+var <- length(c)
+ineqs <- rep(">=", var)
+
+dual.function <- function (A, b, c, ineqs, max.or.min){
+  A. <- t(A)
+  c. <- b
+  b. <- c
+  
+  if (all(ineqs == rep(">=", var)))
+    ineqs. <- rep("<=", var)
+    else("Problem does not match the question")
+  if (max.or.min == "min")
+  max.or.min. <- "max"
+    else("Problem does not match the question")
+  
+return( list (New.A = A., New.b = b., New.c = c., New.ineqs = ineqs., New.max.or.min = max.or.min.))
+  return(A., b., c., ineqs., max.or.min.)}
+
+P <- dual.function(A, b, c, ineqs, max.or.min)
+P
+
+primal.opt <- lp(max.or.min, c, A, ineqs, b)
+primal.opt
+
+#These are the dual problem's parameters
+
+P$New.max.or.min
+P$New.c
+P$New.A
+P$New.ineqs
+P$New.b
+
+dual.opt <- lp(P$New.max.or.min, P$New.c, P$New.A, P$New.ineqs, P$New.b)
+dual.opt
+
+primal.problem <- lp(max.or.min, c, A, ineqs, b)$solution
+primal.problem
+{if (all((A%*%primal.problem) == b))
+  "Constraint is tight for the primal problem"
+else "Constraint is not tight for the primal problem"}
+
+dual.problem <- lp(P$New.max.or.min, P$New.c, P$New.A, P$New.ineqs, P$New.b)$solution
+dual.problem
+{if (all((P$New.A%*%dual.problem) == P$New.b))
+  "Constraint is tight for the dual problem"
+else "Constraint is not tight for the dual problem"}
+```
+
+Here I have collated the code from the questions and then inversed the 'max' and 'min' and then inversed equality signs.
+
+
+####Ptolemy Coursework####
+
+
+##(a)
+There are 25 1x1 squares, 16 2x2 squares, 9 3x3 squares, 4 4x4 squares, which I clearly saw by drawing out the matrices and identifying the pattern.
+
+##(b)
+```{r}
+#M
+Matrix.list <- list()
+n <- 1
+#I want to make an empt list so that the for loop fills up the list
+i <- 1
+j <- 1
+
+for (i in 1:5){
+  for (j in 1:5){
+    M <- matrix(0, nrow = 5, ncol = 5)
+    M[i:i, j:j] <- 1
+    Matrix.list [[n]] <- M
+    n <- n + 1}}
+#Matrix.list
+```
+
+I didn't want to type out each matrix out as there are 54 and that would be laborious.
+
+I am trying to code each of the 1x1 matrices. After googling, I found instead of for (i = [1:5], j [1:5]), I should type for (i in 1:5, j in 1:5) as I was trying to make it so for any i between 1 and 5 and any j between 1 and 5 some codes will be executed.
+I am getting errors when creating my for loop to create all the 1x1 squares with the following code
+for (i in 1:5, j in 1:5). The comma in this code them comes up with an error and I'm not sure how to find multiple conditions but I then realised that this is similar to a double sum so I decided to create another for loop for the js.
+{A[i, j] <− 1}.
+
+The code now doesn't have any errors but the output is not what I was hoping, it has made all the entries 1.
+
+I then tried to print the matrix and realised it is adding the new entries of 1 onto the same matrix, so I tried to add this new matrix into a list.
+
+Matrix.list <- list()
+i <- 1
+j <- 1
+for (i in 1:5){
+  for (j in 1:5){
+    M <- matrix(0, nrow = 5, ncol = 5)
+    M[i, j] <- 1
+    Matrix.list <- M}}
+    #print(Matrix.list)
+    #print(M)}}
+Matrix.list
+
+This just outputs the last matrix of the loop of 1x1 squares.
+
+The curved brackets did not work but a helper during the computing class said to use double square brackets but this still didn't work since the entry in the double brackets is blank and it needs to be defined and we'll call this n for which number the matrix is. Also for completeness, I coded the square matrix of 1 to be from i:i and j:j.
+
+Matrix.list now outputs all the 1x1 squares but cannot pick out certain elements of the list, I assume this is because the inputs of the list are not labelled as 1, 2, 3, etc. I did this by introducing each new matrix as the (n+1)th entry in the list.
+
+```{r}
+n <- 26
+#I now changed n to 26 so that the entries in the list are not overwritten.
+i <- 1
+j <- 1
+for (i in 1:4){
+  for (j in 1:4){
+    M <- matrix(0, nrow = 5, ncol = 5)
+    M[i: (i + 1), j: (j + 1)] <- 1
+    Matrix.list [[n]] <- M
+    n <- (n + 1)}}
+```
+
+```{r}
+n <- 42
+i <- 1
+j <- 1
+for (i in 1:3){
+  for (j in 1:3){
+    M <- matrix(0, nrow = 5, ncol = 5)
+    M[i: (i + 2), j: (j + 2)] <- 1
+    Matrix.list [[n]] <- M
+    n <- (n + 1)}}
+```
+
+```{r}
+n <- 51
+i <- 1
+j <- 1
+for (i in 1:2){
+  for (j in 1:2){
+    M <- matrix(0, nrow = 5, ncol = 5)
+    M[i: (i + 3), j: (j + 3)] <- 1
+    Matrix.list [[n]] <- M
+    n <- (n + 1)}}
+print(Matrix.list)
+```
+
+
+I then edited some of the code to adjust for the now 2x2 squares and then added this onto the list but now beginning as the 26th entry. I then realised something similar to my last coursework where I had to bracket the i+1 because it confuses R and doesn't compute the code in the way that I want it.
+
+The 2x2 squares are outputting but my code for the 1 to 25th entry of the list have now become 'NULL'. I tried to clear my environment and then run all my code again and it worked.
+
+##(c)
+```{r}
+vector.list <- list()
+n <- 1
+for (n in 1:54){
+  vector.list [[n]] <- as.vector(t(Matrix.list[[n]]))
+  n <- n + 1}
+#vector.list
+
+A <- matrix(unlist(vector.list), ncol = 25, byrow = TRUE)
+A. <- t(A)
+A.
+```
+
+I remembered from Statistics last year we can easily turn a matrix into a vector with the as.vector function and I put this in a for loop.
+
+I am trying to create a matrix with all the constraints which are currently in the columns of the vector.list.
+
+M. <- matrix(0, ncol = 1, nrow = 54)
+for (n in 1:54){
+  M. [n] <- as.vector(t(Matrix.list[[n]]))
+  n <- n + 1}
+  
+This creates just the first constraint when I was hoping to have the matrix of constraints.
+I tried several attempts to create this matrix, here are my attempts
+
+for (n in 1:54){
+  M.[ [1:25], n] <- vector.list[[n]]
+ n <- n + 1}
+
+for (m in 1:54){
+  M. <- cbind(vector.list[1:54])
+  m <- m + 1}
+  
+  for (i in 1:54){
+  for (j in 1:25){
+  M. [n] <- as.vector(t(Matrix.list[[n]]))
+  n <- n + 1}
+  
+I then researched into turning a list into a matrix and found an easy function 'unlist'.
+
+```{r}
+b <- rep(1, 54)
+#54 for 54 objective variables
+c <- rep(1, 25)
+ineqs <- rep("=", 25)
+#25 for 25 constraints
+```
+
+##(d)
+```{r}
+library(lpSolve)
+lp("min", b, A., ineqs, c)$solution
+```
+
+The solution for this problem, is the 3rd, 4th and 5th from the first row, 3rd from the second row,  1x1 squares
+The 1st from the first row, 4th from the second row, 4th from the fourth row, 2x2 squares.
+The 1st from the first row, 3x3 square.
+
+I did not need to include any additional constraints.
+
+##(e)
+I did not need to use the int.vec parameter, nor did I get any strange non-integer solutions which is surprising as the question implies that we should.

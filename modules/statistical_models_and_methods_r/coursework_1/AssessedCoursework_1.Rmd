@@ -1,0 +1,195 @@
+---
+title: "AssessedCoursework1"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+Preliminary and reading data
+```{r}
+library(dplyr)
+library(ggplot2)
+library(car)
+BirthData = read.table("BirthData.txt",header = TRUE)
+Births = filter( BirthData, !is.na(age), !is.na(gest), !is.na(sex), !is.na(smokes), !is.na(weight), !is.na(rate), !is.na(bwt))
+```
+
+
+
+Q1a)
+```{r}
+#Pairwise scatterplot of continuous variables regression line to observe correlation.
+Births1 <- Births[c(1, 2, 5, 6, 7)] 
+scatterplotMatrix(Births1[,1:5], pch = ".",smoother=FALSE, main = "Pairwise scatterplot of continuous variables regression line" )
+#Two boxplots of birthweight against sex and another at smokes.
+qplot( x = sex, y = bwt, data = Births, geom = 'boxplot', main = "Boxplot of birthweight against sex", xlab = "Sex" ,ylab = "Birthweight")
+qplot(x = smokes, y = bwt, data = Births, geom = 'boxplot', main = "Boxplot of birthweight against smokes", xlab = "Smokes" ,ylab = "Birthweight")
+```
+From pairwise scatterplot with the regression line, it is clear there is some positive correlation between birthweight and age, birthweight and gestation, and birthweight and rate of growth, with the strongest and most significant correlation being between birthweight and gestation, the second strongest between birthweight and weight, and the relationships of birthweight against the other two are mild. From the plot it is not evidently clear that there is a relationsip between birthweight and rate of growth, however, since the scales of the birthweight compared to the other variables is consideraby larger, a relationship may be present.
+
+From observing the median from the boxplots, birthweight appears to be higher in males than females. In addition, birthweight apears to be highest when the mother did not smoke during the pregnancy, followed by 'heavy' smoking and then 'light' smoking. For mother's with 'light' smoing levels, the interquartile range is much smaller, as is the spread of the data compared to no smoking.
+
+
+
+Q1b)
+```{r}
+fit1 <- lm( bwt ~ sex, data = Births)
+fit1
+#fit0 is the controlled linear model
+fit0 <- lm( bwt ~ 1, data = Births)
+model01 <- anova(fit0, fit1)
+model01
+```
+```{r}
+model <- data.frame(model.matrix(fit1))
+model[c(1:10), 1:2]
+```
+The coding of the factor is denoted by 0 and 1 for females and males respectively.
+The estimated parameters for the model E[bwt] = a + b.x are a = 3411.6 units and b = 103.2 units. This means males have an increasing affect of 103.2 units onto the birthweight. The average birthweight is 3411.6 units which is the average birthweight for a female.The model of birthweight against sex is significant since the p-value is 0.02905 < 0.05, the p-value boundary for acceptance of a linear model. 
+The design matrix is supposed to have dimentiosn (n x p) but here, we have a (3 x 4) matrix but the rank is 3 and so, since 4 =/= 3 the model is not apprpriate.
+
+
+
+Q1c)
+The given form of the model is not appropriate since it has too many parameters. This causes a range of problems with regards to calculations. The design matrix Z (3 x 4) which corresponds to the given model is not of full rank due to this over parameterisation when we only have three linearly independent columns. This means (Z^T)Z is not invertible which is a condition that needs to be met and so the usual method does not work to get the estimated beta_^.
+
+
+
+Q1d)
+```{r}
+fit3 <- lm( bwt ~ smokes, data = Births)
+summary(fit3)
+fit2 <- lm( bwt ~ 1, data = Births)
+model23 <- anova(fit2, fit3)
+model23
+```
+The p-value is relatively high at 0.2535 when we use 0.05 as the typical boundary to accept whether a model is significant enough. This means that smokes does not have a strong association on birthweight.
+Moreover, for a mother who smokes at a 'heavy' level during her pregancy, the average birthweight of the child is 3286.9 units, a mother who smokes at a 'light' level has this average plus 112.9 units, and a mother who does not smoke during her pregancy has a child of the average weight stated plus 191.2 units.
+
+
+
+Q1e)
+```{r}
+fit5 <- lm( bwt ~ sex + gest, data = Births)
+summary(fit5)
+fit4 <- lm( bwt ~ gest, data = Births)
+anova45 <- anova(fit4, fit5)
+anova45
+```
+There is significant evidence for strong association between sex and birthweight after controlling for gestation giving a p-value of 0.007768 << 0.05. The adjusted R^2 is also relatively low for fit5 at 0.2614 which is increases its significance as the variation of the fitted and observed values is low.
+After fixing gestation in the linear model males have an increasing affect of 108.804 grams which is clearly significant in the perspective of the model.
+
+
+
+Q1f)
+```{r}
+#Variance of errors
+summaryfit5 <- summary(fit5)
+summaryfit5
+summaryfit5$sigma^2
+
+#Variance-covariance matrix
+vcov(fit5)
+#Deviance
+deviance(fit5)
+```
+The deviance of the model fit is 74383946.
+
+
+
+Q1g)
+```{r}
+newdata <- data.frame(sex = "Female" , age = 30 , gest = 275)
+#A 95% confidence interval
+predict(fit5, newdata, interval = "confidence", level = 0.95)
+#A 95% prediction interval
+predict(fit5, newdata, interval = "prediction", level = 0.95)
+```
+This means at the 5% significance level, data in the interval (3319.851 , 3437.941), are significant.
+Also, we predict that 95% of the data lies in the interval (3378.896 , 4204.288).
+
+
+
+Q1h)
+```{r}
+lm1 <- lm( bwt ~ age + gest + sex + smokes + weight + rate, data = Births)
+summary1 <- summary(lm1)
+summary1
+deviance(lm1)
+```
+
+```{r}
+#Testing significance of smokes by controlling all other factors
+lm1.1 <- lm( bwt ~ age + gest + sex + weight + rate, data = Births)
+summary1.1 <- summary(lm1.1)
+summary1.1
+anova(lm1.1,lm1)
+deviance(lm1.1)
+```
+We remove the smokes factor from the model as it has a high p-value at 0.58344 and 0.19285. Additionally, when we compare the p-value of 0.3641 from the anova output when we control all the factors except smokes, we can see that this is high and so significant. The adjusted R^2 has not changed so the affect of smokes is not significant.
+Also, from earlier sections we established that gestation has a significant affect on birthweight so we shall keep this factor in the model. From part 1e) when we tested for the affect of sex on birthweight we found that sex has a significant affect on birthweight for gestation being controlled.
+Although, the deviance has increased by a margin of 330860. This is relatively small and so does not have a big affect on the model so we will still remove smokes.
+
+
+```{r}
+#New and improved model2 (having removed smokes)
+lm2 <- lm( bwt ~ age + gest + sex + weight + rate, data = Births)
+summary2 <- summary(lm2)
+summary2
+deviance(lm2)
+```
+Here all p-values in the summary appear to be significant so no additional chanes will be made here until further tests.
+
+
+```{r}
+#Testing significance of age by controlling all other factors
+lm2.1 <- lm( bwt ~ gest + sex + weight + rate, data = Births)
+summary2.1 <- summary(lm2.1)
+summary2.1
+model2.1..2 <- anova(lm2,lm2.1)
+model2.1..2
+deviance(lm2.1)
+```
+The p-value from the anova output shows that age appears to have a signficant association with birthweight with a p-value of 0.02699. Similarly, the adjusted R^2 has decreased by 0.0064 to 0.3059 are low showing that the observed and fitted values are very close, which is ideal for a model. Additionally, by removing this factor the deviance increases by a large degree of 1135456, which is ideal and so, provides more evidence to keep age.
+
+
+```{r}
+#New and improved model3 (after having removed smokes and included age)
+lm3 <- lm( bwt ~ age + gest + sex + weight + rate, data = Births)
+summary3 <- summary(lm3)
+summary3
+deviance(lm3)
+```
+Here all p-values appear to be significant so no additional changes will be made here until further tests.
+
+```{r}
+#Testing significance of weight by controlling all other factors
+lm3.1 <- lm( bwt ~ age + gest + sex + rate, data = Births)
+summary3.1 <- summary(lm3.1)
+summary3.1
+model3.1..3 <- anova(lm3,lm3.1)
+model3.1..3
+deviance(lm2.1)
+```
+
+Observing the p-value which is 4.552e-05, and so very small, meaning weight has a strong association with birthweight and we should keep it in the model. The adjusted R^2 has decreased by 0.026, which is very small and so can be ignored as the significance from the p-value has high. The deviance has increased but 804596 but again, the significance of the p-value is stronger so we will keep weight.
+
+
+```{r}
+#New and improved model3 (after having removed smokes and included age)
+lm5 <- lm( bwt ~ age + gest + sex + weight + rate, data = Births)
+summary5 <- summary(lm5)
+summary5
+deviance(lm5)
+```
+
+```{r}
+#Testing significance of rate by controlling all other factors
+lm5.1 <- lm( bwt ~ age +gest + sex + weight, data = Births)
+summary5.1 <- summary(lm5.1)
+summary5.1
+model5.1..5 <- anova(lm5,lm5.1)
+model5.1..5
+deviance(lm5.1)
+```
+Here, the p-value of 0.008244 is also very low, giving reason to keep rate in the model. The adjusted R^2 has also increased by 0.0099 which is quite and low which means it can be ignored. The deviance increased by 1,150,966 which although is high, is not as high in the wider picture, regardless we will keep rate in the model.

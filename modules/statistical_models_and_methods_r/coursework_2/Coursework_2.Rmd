@@ -1,0 +1,415 @@
+---
+title: "Coursework2"
+author: "KieranPatel"
+date: "21/03/2017"
+output:
+  word_document: default
+  html_document: default
+---
+#Preliminary and reading data#
+```{r, Warning = FALSE}
+library(car)
+library(dplyr)
+library(ggplot2)
+library(leaps)
+library(ElemStatLearn)
+library(glmnet)
+train = read.table("Train.txt",header = T)
+test  = read.table("Test.txt",header = T)
+train = filter( train, !is.na(Status), !is.na(Duration), !is.na(History), !is.na(Purpose), !is.na(Amount), !is.na(Savings), !is.na(Employment), !is.na(Disposable), !is.na(Personal), !is.na(OtherParties), !is.na(Residence), !is.na(Property), !is.na(Age), !is.na(Plans), !is.na(Housing), !is.na(Existing), !is.na(Job), !is.na(Dependants), !is.na(Telephone), !is.na(Foreign), !is.na(CreditScore))
+test = filter( test, !is.na(Status), !is.na(Duration), !is.na(History), !is.na(Purpose), !is.na(Amount), !is.na(Savings), !is.na(Employment), !is.na(Disposable), !is.na(Personal), !is.na(OtherParties), !is.na(Residence), !is.na(Property), !is.na(Age), !is.na(Plans), !is.na(Housing), !is.na(Existing), !is.na(Job), !is.na(Dependants), !is.na(Telephone), !is.na(Foreign), !is.na(CreditScore))
+str(train)
+str(test)
+```
+The read test and train data match the explanation of the variables which are illustrated in the coursework sheet.
+
+
+
+##Q1a##
+```{r}
+train1 <- train[c(2, 5, 8, 11, 13, 16, 18, 21)] 
+scatterplotMatrix(train1[,1:8], pch = ".", smoother = FALSE, main = "Pairwise scatterplot of continuous variables with regression line")
+#Whilst observing the affect of the CreditScore individually against the variables, from the pairwise scatter plot we can see a obvious strong negative correlation between Duration and again with Amount. There is a weaker correlation when considering Existing and even weaker correlation when looking at Age, albeit both being a positive correlation. Disposable has an even weaker negative correlation to those mentioned so far. Variables named Residence and Dependants have very little correlation that it is not evident through the plot.
+
+Status1 <- factor(train$Status, levels = c("Negative", "None", "Small", "Large"))
+History1 <- factor(train$History, levels = c("A", "B", "C", "D", "E"))
+Purpose1 <- factor(train$Purpose, levels = c("NewCar", "UsedCar", "Other", "Furniture", "Televison", "Domestic", "Repairs", "Education", "Training", "Business"))
+Savings1 <- factor(train$Savings, levels = c("Unknown", "Low", "Medium", "Large", "VeryLarge"))
+Employment1 <- factor(train$Employment, levels = c("Unemployed", "Short", "Mdeium", "Long", "VeryLong"))
+Personal1 <- factor(train$Personal, levels = c("M:DivSepMar", "F:DivSepMar", "M:Single", "F:Single"))
+OtherParties1 <- factor(train$OtherParties, levels = c("None", "Coapp", "Guarantor"))
+Property1 <- factor(train$Property, levels = c("House", "Savings", "Car", "None"))
+Plans1 <- factor(train$Plans, levels = c("Bank", "Stores", "None"))
+Housing1 <- factor(train$Housing, levels = c("Rent", "Own", "RentFree"))
+Telephone1 <- factor(train$Telephone, levels = c("Yes", "No"))
+Foreign1 <- factor(train$Foreign, levels = c("Yes", "No"))
+
+plot(Status1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Status (Fig 1)", xlab = "Status", ylab = "CreditScore")
+#Figure 1 shows that there is some slight positive correlation between CreditScore and Status, particularly if we temporarily ignore 'None'. This implies this factor should be considered in the model.
+
+plot(History1, train$CreditScore, data = train, main = "Boxplot of CreditScore against History (Fig 2)", xlab = "History", ylab = "CreditScore")
+#Figure 2 shows that there is positive correlation between CreditScore and History. This implies this factor should be considered in the model.
+
+plot(Purpose1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Purpose (Fig 3)", xlab = "Purpose", ylab = "CreditScore")
+#Figure 3 shows that the data is sparsely distributed, but the levels are uncorrelated so we should consider this variable.
+
+plot(Savings1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Savings (Fig 4)", xlab = "Savings", ylab = "CreditScore")
+#There is a positive correlation between 'Medium', 'Large', and 'VeryLarge' so these three levels should be considered or some variation of them since there are three distinctive levels.
+
+plot(Employment1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Employment (Fig 5)", xlab = "Employment", ylab = "CreditScore")
+#Employement does not appaear to have a significant affect on CreditScore from the boxplot so we will investigate this variable.
+
+plot(Personal1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Personal (Fig 6)", xlab = "Personal", ylab = "CreditScore")
+#There are three significant levels in this variable so this entire variable should be considered for the fonal model.
+
+plot(OtherParties1, train$CreditScore, data = train, main = "Boxplot of CreditScore against OtherParties (Fig 7)", xlab = "OtherParties", ylab = "CreditScore")
+#OtherParties has very similar levels but the medium are slightly different so this variable will be looked at very carefully.
+
+plot(Property1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Property (Fig 8)", xlab = "Property", ylab = "CreditScore")
+#The levels of Property are very similar and so we may be eble to exclude this variable.
+
+plot(Plans1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Plans (Fig 9)", xlab = "Plans", ylab = "CreditScore")
+#Plans appears to have a significant affect with levels "Stores' and 'None' so this should be considered in the final model.
+
+plot(Housing1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Housing (Fig 10)", xlab = "Status", ylab = "CreditScore")
+#Housing also appears to have a steady affect throught the levels, implying little correlation between the two variables.
+
+plot(train$Job, train$CreditScore, data = train, main = "Boxplot of CreditScore against Job (Fig 11)", xlab = "Job", ylab = "CreditScore")
+#Job also does not appear to have an impat on CreditScore and so, we will investigate whether to include this.
+
+plot(Telephone1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Telephone (Fig 12)", xlab = "Telephone", ylab = "CreditScore")
+#Telephone does not appear to have a significant impact on CreditScore so we will investigate this.
+
+plot(Foreign1, train$CreditScore, data = train, main = "Boxplot of CreditScore against Foreign (Fig 13)", xlab = "Foreign", ylab = "CreditScore")
+#Foreign appears to have a significant affect since there is a difference between the levels.
+
+```
+To observe the affect of CreditScore against individual variables from the pairwise scatter plot we can see a obvious strong negative correlation between Duration and again with Amount. There is a weaker correlation when considering Existing and even weaker correlation when looking at Age, albeit both being a positive correlation. Disposable has an even weaker negative correlation to those mentioned so far. Variables named Residence and Dependants have very little correlation that it is not evident through the plot. The plot also shows the distribution of CreditScore which follows a Normal Distribution. This will be of use and relevance later when choosing models to see if the distribution has remained in tact.
+
+
+
+#FULL MODEL#
+```{r}
+Full_Model <- lm(CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Existing + Job + Dependants + Telephone + Foreign, data = train)
+
+predictions_FULL <- predict(Full_Model, newdata=select(test, -CreditScore))
+MSE_Full_Model <- mean((predictions_FULL - select(test, CreditScore))^2)
+
+MSE_Full_Model
+AIC(Full_Model)
+```
+###SUMMARY###
+###Model_Full <- lm(CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Existing + Job + Dependants + Telephone + Foreign)
+has MSE = 2460.575
+has AIC = 8542.856
+
+
+#STEPWISE REGRESSION#
+#Beginning with Full Model#
+```{r, results = 'hide'}
+fit_Full <- lm(CreditScore ~ . , data = train)
+fit_step_Full <- step(fit_Full)
+```
+The output is hidden since there is a lot.
+##Model_Stepwise_FullModel <- lm(CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign)
+
+#STEPWISE REGRESSION#
+#Beginning with NullModel#
+```{r, results = 'hide'}
+fit_Null <- lm(CreditScore ~ 1 , data = train)
+fit_step_Null <- step(fit_Null, scope = CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Existing + Job + Dependants + Telephone + Foreign)
+```
+The output is hidden since there is a lot.
+##Model_Stepwise_NullModel <- lm(CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age)
+
+#MSE of Model_Stepwise_FullModel and Model_Stepwise_NullModel#
+```{r}
+predictions_Full <- predict(fit_step_Full, newdata=select(test, -CreditScore))
+mse_step_Full <- mean((predictions_Full - select(test, CreditScore))^2)
+
+predictions_Null <- predict(fit_step_Null, newdata=select(test, -CreditScore))
+mse_step_Null <- mean((predictions_Full - select(test, CreditScore))^2)
+
+mse_step_Full
+mse_step_Null
+```
+Either starting from the Null Model or the Full Model, both conclude to the same model and not surprisingly, give the same mse of 2431.625. We will call this model Model_Stepwise
+and directly below is an anova against Full_Model to find the F-statistic which is defined earlier.
+
+#Anova between Model_Stepwise and Full_Model#
+```{r}
+Model_Stepwise <- lm (CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age, data = train)
+AIC(Model_Stepwise)
+anova(Model_Stepwise, Full_Model)
+```
+###SUMMARY###
+###Model_Stepwise <- lm (CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age)
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+
+#BEST SUBSETS REGRESSION#
+#Cp and BIC#
+```{r, results = 'hide'}
+a <- regsubsets(train$CreditScore ~ . , data = train, nvmax = 48)
+summary.out <- summary(a)
+summary.out
+summary.out$cp
+plot( a , scale = 'Cp')
+plot( a , scale = 'bic')
+```
+
+#Cp Models#
+The two models from this method are directly below with a further explanation.
+
+Model_BestSubsetRegression_Cp_1: CreditScore ~ Status (Negative, None, Small) + Duration + History (C, D, E) + Purpose (Domestic, Education, NewCar, Repairs, Television, Training, UsedCar) + Amount + Savings (Low, Unknown, VeryLarge) + Employment (Unemployed, VeryLong) + Disposable + Personal (F:Single, M:DivSepMar, M:Single) + OtherParties (Guarantor, None) + Residence + Property (House) + Age + Plans (None, Stores) + Housing (Rent) + Job (Unskilled) + Telephone (Yes) + Foreign (Yes)
+
+Model_BestSubsetRegression_Cp_2: CreditScore ~ Status (Negative, None, Small) + Duration + History (C, D, E) + Purpose (Education, NewCar, Television, Training, UsedCar) + Amount + Savings (Low, Unknown, VeryLarge) + Disposable + Personal (M:Single) + OtherParties (Guarantor) + Age + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+
+With levels ignored
+
+##Model_BestSubsetRegression_Cp_1.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Job + Telephone + Foreign
+
+##Model_BestSubsetRegression_Cp_2.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign
+
+The best reduced model is when Cp = 24.96151 since this is the first stage in which Cp is approximately p, where p = 25 in this case. At this p value, the test shows 2 models. The two models which achieve this criteria are Model_BestSubsetRegression_Cp_1 and Model_BestSubsetRegression_Cp_2. With the levels being ignored, it is clear that the two models are different so we will determine which of the two to use using four types of statistics which are calculated below.
+
+
+#Cp Model#
+```{r}
+Model_BestSubsetRegression_Cp_1 <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Job + Telephone + Foreign, data = train)
+
+Model_BestSubsetRegression_Cp_2 <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign, data = train)
+
+predictions_Model_BestSubsetRegression_Cp_1 <- predict(Model_BestSubsetRegression_Cp_1, newdata=select(test, -CreditScore))
+mse_Model_BestSubsetRegression_Cp_1 <- mean((predictions_Model_BestSubsetRegression_Cp_1 - select(test, CreditScore))^2)
+
+predictions_Model_BestSubsetRegression_Cp_2 <- predict(Model_BestSubsetRegression_Cp_2, newdata=select(test, -CreditScore))
+mse_Model_BestSubsetRegression_Cp_2 <- mean((predictions_Model_BestSubsetRegression_Cp_2 - select(test, CreditScore))^2)
+
+mse_Model_BestSubsetRegression_Cp_1
+AIC(Model_BestSubsetRegression_Cp_1)
+anova(Model_BestSubsetRegression_Cp_1, Full_Model)
+
+mse_Model_BestSubsetRegression_Cp_2
+AIC(Model_BestSubsetRegression_Cp_2)
+anova(Model_BestSubsetRegression_Cp_2, Full_Model)
+```
+##Model_BestSubsetRegression_Cp_1.1 <- CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Job + Telephone + Foreign
+has MSE 2449.475
+has AIC = 8539.947
+has F-statistic against Full_Model = 0.5127
+
+##Model_BestSubsetRegression_Cp_2.1 <- CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+
+Since Model_BestSubsetRegression_Cp_2 is nested within Model_BestSubsetRegression_Cp_1 we can determine which model to use using the F-statistic. The F-statistic for Model_BestSubsetRegression_Cp_1.1 is 0.5127 while the value for Model_BestSubsetRegression_Cp_2.1 is 0.7838, which is closer to 1 than the former of the two models. This would suggest to keep Model_BestSubsetRegression_Cp_2. The AIC for the first model is also slightly larger by approximately 12, providing more evidence to accept the second model. So both pieces of data suggest to use the second model. This concludes the following model for the Best Subsets Regression Method for Cp
+
+###SUMMARY###
+###Model_Cp <- CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+
+#BIC Models#
+We want to minimise the value of BIC so from the BIC plot there are 6 models each holding the smallest BIC value of -850.
+
+Model_BestSubsetsRegression_BIC_1.0: CreditScore ~ Status (Negative, None, Small) + Duration + History (C ,D, E) + Purpose (Education, NewCar, Training, UsedCar) + Amount + Savings (Unknown, VeryLarge) + Disposable + Personal (M:Single) + OtherParties (Guarantor) + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+Model_BestSubsetsRegression_BIC_2.0: CreditScore ~ Status (Negative, None, Small) + Duration + History (C ,D, E) + Purpose (Education, NewCar, Training, UsedCar) + Amount + Savings (Unknown, VeryLarge) + Disposable + Personal (M:Single) + OtherParties (Guarantor) + Age + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+Model_BestSubsetsRegression_BIC_3.0: CreditScore ~ Status (Negative, None, Small) + Duration + History (C ,D, E) + Purpose (Education, NewCar, Training, UsedCar) + Amount + Savings (Low, Unknown, VeryLarge) + Disposable + Personal (M:Single) + OtherParties (Guarantor)+  Age + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+Model_BestSubsetsRegression_BIC_4.0: CreditScore ~ Status (Negative, None, Small) + Duration + History (C ,D, E) + Purpose (Education, NewCar, Television, Training, UsedCar) + Amount + Savings (Low, Unknown, VeryLarge) + Disposable + Personal (M:Single) + OtherParties (Guarantor) + Age + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+Model_BestSubsetsRegression_BIC_5.0: CreditScore ~ Status (Negative, None, Small) + Duration + History (C ,D, E) + Purpose (Education, NewCar, Repairs, Training, UsedCar) + Amount + Savings (Low, Unknown, VeryLarge) + Disposable + Personal (M:SepDivMar, M:Single) + OtherParties (Guarantor) + Age + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+Model_BestSubsetsRegression_BIC_6.0: CreditScore ~ Status (Negative, None) + Duration + History (C ,D, E) + Purpose (Education, NewCar, Training, UsedCar) + Amount + Savings (Unknown, VeryLarge) + Disposable + Personal (M:Single) + OtherParties (Guarantor) + Plans (None) + Housing (Rent) + Telephone (Yes) + Foreign (Yes)
+
+
+With levels ignored
+##Model_BestSubsetsRegression_BIC_1.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Plans + Housing + Telephone + Foreign
+
+##Model_BestSubsetsRegression_BIC_2.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign
+
+Model_BestSubsetsRegression_BIC_3.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties  Age + Plans + Housing + Telephone + Foreign
+
+Model_BestSubsetsRegression_BIC_4.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign
+
+Model_BestSubsetsRegression_BIC_5.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign
+
+Model_BestSubsetsRegression_BIC_6.1: CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Plans + Housing + Telephone + Foreign
+
+As can be seen by the models above where the levels are omitted, the set of models Model_BestSubsetsRegression_BIC_2.1, Model_BestSubsetsRegression_BIC_3.1, Model_BestSubsetsRegression_BIC_4.1, and Model_BestSubsetsRegression_BIC_5.1 and the second set of models Model_BestSubsetsRegression_BIC_1.1 and Model_BestSubsetsRegression_BIC_6.1 are the only the same when the different levels are ignored and this is how we are viewing the variables because for simplicity, we are not omitting levels from a variable. Therefore, there are only 2 different models which are between Model_BestSubsetsRegression_BIC_1.1 and Model_BestSubsetsRegression_BIC_2.1 and the only difference between the two models is that the model named Model_BestSubsetsRegression_BIC_2.1 includes the variable Age. We will now find the MSE to see whether we should include Age in our model for this method.
+
+
+#BIC Model with mse of Model_BestSubsetsRegression_BIC_1 and Model_BestSubsetsRegression_BIC_2#
+```{r}
+Model_BestSubsetRegression_BIC_1 <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Plans + Housing + Telephone + Foreign, data = train)
+
+Model_BestSubsetRegression_BIC_2 <- lm(CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign, data = train)
+
+predictions <- predict(Model_BestSubsetRegression_BIC_1, newdata=select(test, -CreditScore))
+mse_Model_BestSubsetRegression_BIC_1 <- mean((predictions - select(test, CreditScore))^2)
+
+predictions <- predict(Model_BestSubsetRegression_BIC_2, newdata=select(test, -CreditScore))
+mse_Model_BestSubsetRegression_BIC_2 <- mean((predictions - select(test, CreditScore))^2)
+
+mse_Model_BestSubsetRegression_BIC_1
+AIC(Model_BestSubsetRegression_BIC_1)
+
+mse_Model_BestSubsetRegression_BIC_2
+AIC(Model_BestSubsetRegression_BIC_2)
+
+anova(Model_BestSubsetRegression_BIC_1, Model_BestSubsetRegression_BIC_2)
+```
+##Model_BestSubsetRegression_BIC_1 <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Plans + Housing + Telephone + Foreign)
+has MSE 2426.406
+has AIC = 8533.136
+has F-statistic against Full_Model = 1.2399
+
+##Model_BestSubsetRegression_BIC_2 <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign)
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+p-value between the two BIC models 0.007466
+
+
+The significance between the two model is high so this means that Age is a significant variable which should be include. This would suggest using the following model also because the mse and AIC value is smaller, although just slightly, but this is a strong criteria. The F-statistics of the latter model is closer to 1 than that of the former This concludes the following model for the Best Subsets Regression Method for BIC.
+
+###SUMMARY###
+###Model_BIC <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign)
+has MSE 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+
+#RIDGE REGRESSION#
+```{r}
+fit.1 = lm(CreditScore ~ ., data = train)
+x.1 = model.matrix(fit.1)
+y.1 = select(train, CreditScore)
+y.1 = as.matrix(y.1)
+ridge = glmnet(x.1, y.1, alpha = 0)
+ridge.cv = cv.glmnet(x.1, y.1, alpha = 0)
+ridge.cv$lambda.min
+ridge.cv$lambda.1se
+plot(ridge.cv)
+
+fit.xnew = lm(CreditScore ~ ., data = test)
+fit.xnew = model.matrix(fit.xnew)
+
+ridge.prediction1. = predict(ridge.cv, fit.xnew, s = "lambda.1se")
+ridge.prediction2. = predict(ridge.cv, fit.xnew, s = "lambda.min")
+mse_ridge1 <-  mean((ridge.prediction1. - select(test, CreditScore))^2)
+mse_ridge2 <-  mean((ridge.prediction2. - select(test, CreditScore))^2)
+
+mse_ridge1
+mse_ridge2
+plot(ridge, xvar = 'lambda', main = "Plot of Log Lambda against the coefficients being minimised")
+```
+From the plot, it is evident that as lambda increases, the mean square error increases. The largest value of lambda that gives a cross-validation error within 1 standard deviation of the minimum is 24.26909 and the value of lambda that minimises the cross-validation error is 5.477582.
+
+
+###SUMMARY###
+#The Ridge Regression model suggests using lambda.min = 5.477582 as our lambda value since this value has MSE 2531.103
+
+
+
+In Summary,
+
+###Model_Full <- lm(CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Employment + Disposable + Personal + OtherParties + Residence + Property + Age + Plans + Housing + Existing + Job + Dependants + Telephone + Foreign)
+has MSE = 2460.575
+has AIC = 8542.856
+
+###Model_Stepwise <- lm (CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age)
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+###Model_Cp <- CreditScore ~ lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign)
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+###Model_BIC <- lm (CreditScore ~ Status + Duration + History + Purpose + Amount + Savings + Disposable + Personal + OtherParties + Age + Plans + Housing + Telephone + Foreign)
+has MSE = 2431.625
+has AIC = 8527.637
+has F-statistic against Full_Model = 0.7838
+
+###Model_Ridge
+The Ridge Regression model suggests using lambda.min = 5.477582 as our lambda value.
+has MSE 2531.103
+
+
+Using the MSE values we can clearly see that the Ridge Regression Model does not give us a good model since it has the highest mse of all the models so we can reject this model, especially since as this method does not remove insignificant factor/s, but instead, it adjusts the coefficients for all the variables in the model to compensate for which variables have the greatest affect on CreditScore and which do not. Model_BIC, Model_Cp, and Model_Stepwise are all the same model so all three methods give the same model which is not necessarily common, we will call this Model_step_BIC_Cp. Now, we are left to compare Model_Full and Model_step_BIC_Cp and we can see clearly that the mse and AIC are lower in Model_step_BIC_Cp, which is ideal so we can conclude that Model_step_BIC_Cp is the best less complex model.
+While accepting this model, we accept the limitations of the the Stepwise Regression method and the Best Subsets Regression. The Stepwise Regression method does not exhaust all possible models and they include variables which just happen to explain the data by chance and this decreases its effectiveness with predictions. A notable point to mention about not using the model from the Ridge Regression is that while the Best Subsets Method produces a method which can be easily interpreted and has a lower prediction error, there tends to be a higher variance as a result of keeping the entirety of certain variables whereas for Ridge Regression the variance does not suffer as much due to its continuous nature of the method and its shrinking technique.
+
+The Best Subsets Regression method also has some limitations, which is that it is not supposed to be used for many variables and the running time of this method increases exponentially with a larger number of variables, however, since the stepwise can deal with many variables and we are given the same model from all methods, this in return, strengthens the argument to use this model despite the limitations of the methods discussed.
+This justifies and concludes the reasons to use the parsimonious model that is 
+####Model_Best <- lm (CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age)
+
+```{r}
+Model_Best <- lm (CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age, data = train)
+
+plot(Model_Best)
+influencePlot(Model_Best, main = "Influence Plot")
+qqPlot(Model_Best, main = "QQ-Plot")
+hist(rstudent(Model_Best))
+influenceIndexPlot(Model_Best, id.n = 3)
+rstandard(Model_Best)
+sort(coef(Model_Best))
+```
+The Residual vs Fitted plot shows a horizontal line and so, there is no need to transform.
+Scale-Location shows a that the fitted values are very close to the observed data. The trend of the graphs are almost a complete horizontal line which is what we hope from a good model. The Normal QQ-plot shows that Model_Best fits a Normal Distribution very well, which is our intention because from the scatter plot matrix from earlier we can see the distribution of CreditScore resembles a Normal Distribution and so, the new model has kept this distribution of the data in tact. The QQ-plot is also in sync with Normal QQ-plot but is more clear in demonstrating what the QQ-plot shows. This implies that the removed variables were indeed insignificant, further justifying our claim to remove them, moreover we can see from the histogram of the model that the new and improved model from the full model still retains this feature. The influence plot in itself diagrammatically demonstrates how parameter estimates would vary if individual points were excluded. From the Residual vs Leverage plot along with the influence plot, we can clearly see there are no leverage points which skew the data, suggesting that we need not remove any individual data points. In addition, specifically to the influence plot, the plot clearly shows us that very few points appear to have a high leverage when considering the whole data, further justifying the analysis that we need not omit data points. By using the other plots mentioned we can see that there are no leverage points which skew the data and the diagnostic plot backs this up by showing this since even the three points with the highest Cook's distance are still relatively low in the wider view of the data.
+
+The 208th data point's Studentized Residuals is less than 2 so this is not a high leverage point. In addition,  the hat values for the 611th and 639th data points are less than 0.12 and this value is derived by the rule of thumb that p_ii > 2p / n where p = 48, n = 800. Furthermore, the three data points all have a Cook's Distance value less than 1 so all these pieces of information leads to the conclusion that we shall not remove data points.
+
+0.12 p = 48  n = 800, cook's < 1
+Lastly, there is  print out of the of the coefficients:
+- HistoryE has the strongest correlation which happens to be positive at 76.86358783, however, this is contradictory to logic. This is because if individuals have defaulted in the past this improves their credit rating.
+- StatusNone has a strong correlation of 69.40856679 meaning having no account or whether this is unknown means that this increases your credit rating.
+- OtherPartiesGuarantor and SavingsVeryLarge also have a positive and strong correlation with credit rating.
+- ForeignYes, PurposeEducation, StatusNegative, and PurposeNewCar all have a strong negative correlation and so decrease your credit rating.
+- Age, Amount, SavingsMedium are exhibit weak correlation and so, have little affect on the credit score.
+
+
+##Q1b##
+#MSE#
+Within Q1a, the mean-square errors were necessary to determine which model would be the best and least complex model so determining the mse of the models was completed in Q1a and this is evident in the summary of the models.
+
+```{r}
+Model_Best <- lm (CreditScore ~ Status + Duration + Purpose + History + Savings + Personal + Foreign + Plans + OtherParties + Disposable + Amount + Housing + Telephone + Age, data = test)
+
+prediction_Best <- predict(Model_Best, newdata = select(test, - CreditScore))
+x.1 = select(test, CreditScore)
+x.1 = as.matrix(x.1)
+y.1 = as.matrix(prediction_Best)
+plot(x.1, y.1, xlab = "Test CreditScore values", ylab = "Predicted CreditScore values", main = "Plot of predicted against true CreditScores values")
+abline(0, 1)
+```
+The plot of the predicted against true CreditScore values demonstrates a positive correlation and so, implies the predicted and true values of CreditScore are directly proportional. This concludes that the predicted values are close to the true value and so, the model is suitable. Below is a numerical test providing further evidence of this observation.
+
+
+```{r}
+t.test(x.1, y.1, paired = TRUE)
+```
+The t-test gives a p-value of 0.3241 which shows there is no significant difference between the predicted and true CreditScore values, showing that the model which we derived from Q1a using the train data is also suitable for test data.
+
+
+##Q1c##
+```{r}
+predict_data <- predict(Model_Best, newdata = select(test, -CreditScore))
+true_data <- select(test, CreditScore)
+risk_predict_data <- ifelse(predict_data < 500, 1, 0)
+risk_true_data <- ifelse(true_data < 500, 1, 0)
+sum(risk_predict_data == risk_true_data)
+```
+This shows that 176/200 = 88% of the individuals from the test data were assigned the correct risk rating according to the classification given and using Model_Best. This implies the predictions give a 88% accuracy.

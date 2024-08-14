@@ -1,0 +1,70 @@
+---
+title: "Hypatia"
+author: "Kieran Patel"
+date: "25/11/2017"
+output: html_document
+---
+
+
+####Hypatia Coursework####
+
+
+##(a)
+Gomory cuts reduce a feasible region to include all the integer solutions as before but fewest number of non-integer solutions.
+
+##(b)
+```{r}
+library (lpSolve)
+f.obj1 <- c(12, 20, 15, 0, 0, 0, 0)
+f.con1 <- matrix(c(2, 5, 3, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, -1, 1), nrow = 3, byrow = TRUE)
+f.ineqs1 <- c("=", "=", '=')
+f.rhs1 <- c(50, 12, 5)
+lp("max", f.obj1, f.con1, f.ineqs1, f.rhs1)
+lp("max", f.obj1, f.con1, f.ineqs1, f.rhs1)$solution
+```
+
+I cannot seem to get my s3 to be 2. In this question, I have to put <= and >= instead of = to get the same answer as in the notes.
+
+I kept fiddling with my input values and realised it was because there are 4 slack variables.
+
+I have managed to make it work, I found out that my inequality had not been changed to equality.
+
+##(c)
+```{r}
+f.obj2 <- c(12, 20, 15, 0, 0, 0, 0)
+f.con2 <- matrix(c(2, 5, 3, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, -1, 1), nrow = 3, byrow = TRUE)
+f.ineqs2 <- c("=", "=", '=')
+f.rhs2 <- c(50, 13, 5)
+lp("max", f.obj2, f.con2, f.ineqs2, f.rhs2)
+lp("max", f.obj2, f.con2, f.ineqs2, f.rhs2)$solution
+```
+
+##(d)
+By working out the final tableau, we can get the Gomory cut.
+From (c) we can see the new objective function to be
+1.5(x1) + 1(x3) - 0.5(s1) + 2.5(s2) = 7.5
+Since all variables are non-negative rounding down the lhs makes the lhs no larger so we get
+1(x1) + 1(x3) - 1(s1) + 2(s2) <= 7.5
+Now, rounding down the rhs since the lhs is an integer, we get
+1(x1) + 1(x3) - 1(s1) + 2(s2) <= 7
+This is now the Gomory cut.
+
+##(e)
+```{r}
+f.obj3 <- c(12, 20, 15, 0, 0, 0, 0, 0)
+f.con3 <- matrix(c(2, 5, 3, 1, 0, 0, 0, 0,
+                   1, 1, 1, 0, 1, 0, 0, 0,
+                   0, 1, 0, 0, 0, -1, 1, 0,
+                   1, 0, 1, -1, 2, 0, 0, 1), nrow = 4, byrow = TRUE)
+f.ineqs3 <- c("=", "=", '=', '=')
+f.rhs3 <- c(50, 13, 5, 7)
+lp("max", f.obj3, f.con3, f.ineqs3, f.rhs3)
+lp("max", f.obj3, f.con3, f.ineqs3, f.rhs3)$solution
+```
+
+Once I added the Gomory cut, as expected the solution are all integer values, which is what we wanted and it now fits the problem at hand.
+
+##(f)
+The optimal solution is x1 = 1, x2 = 6, x3 = 6, and s3 = 1 and the optimal solution is 222.
+I was surprised that the optimals had slightly changed, where x1 increased to 1 from 0 and x2 and x3 changed to 6. I imagined that the solution would just be values rounded down to the nearest integer and that the slacks may have increased to compensate for the rounding down of the variables.
+The Gomory cut reduced the optimal solution to an integer value which was expected as the optimal without the Gomory cut was 222.5 and for it to be integer we would expect the optimal value to be at 222.

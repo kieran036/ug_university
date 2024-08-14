@@ -1,0 +1,426 @@
+---
+title: "Al-Khawarizmi and Hunayn"
+author: "Kieran Patel"
+date: "14/12/2017"
+output: html_document
+---
+
+
+####Al-Khwarizmi####
+
+
+##(a)
+The set of integer numbers between 0 and 18 are the possible outcomes of the Gambler's Ruin. This is because you can get between 0 and 9 and you can choose whether to bet some of it or not, so these possibilities are outcomes, additionally, you can choose to bet all of it or some and these possibilities lead to the set of all integers between 10 and 18.
+
+For x values 0 and 10 to 18 we know that V_n(x) = 0 and 1 respectively. This is because when we have 0 we will not be able to bet anything so it stays at 0 and if we have any value greater than or equal to 10 we have won the game and V_n(x) = 1.
+
+##(b)
+```{r}
+V <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1 ,1, 1, 1, 1, 1, 1)
+length(V)
+#V is the vector of V_0 values
+```
+
+##(c)
+```{r}
+W <- c(0, NA, NA, NA, NA, NA, NA, NA, NA, NA, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+length(W)
+```
+
+##(d)
+```{r}
+f <- function(x, p, V){
+  # x contains the state; a an action; p the probability of winning a bet; and V_T__1 contains the vector of values of the function V_{T-1}
+
+a <- c(1:x)
+#Where x is an element of the integers included in the set [1,9]
+
+#We first work with T = 1
+list. <- list()
+n <- 1
+
+for(a in 1:x){
+  V1 <- V[x + a + 1]
+  V2 <- V[x - a + 1]
+  v_1 <- p*V1 + (1-p)*V2
+  list. [[n]] <- v_1
+  n <- n + 1
+  }
+
+max <- max(unlist(list.))
+#v_1 <- max[p*V1 + (1-p)*V2]
+#V_1 <- max(v_1)
+
+  return(list(list., max))
+}
+
+h <- f(8, 0.4, V)
+h
+```
+
+I first attempted
+for(a in 1:x){
+v_1 <- max[p*V[x + a] + (1-p)*V[x - a]]
+v_1}}
+This seemed to be too much for R to deal with in one step so I though if I broke it down I would be able to make sense of it more easily and spot the errors and mistakes more easily too.
+
+I then decided to check if my V[x + a] and V[x - a] were indeed outputting the right values from V_0. It turns out that it was returning the correct values and the following code demonstrates this
+V1 <- V[x + a]
+V2 <- V[x - a]
+#v_1 <- max[p*V[x + a] + (1-p)*V[x - a]]
+#v_1}
+  return(list(V1, V2))
+}
+
+f(2, 1, 0.5, V)
+
+V_1 <- max(v_1) 
+
+I then attempted this
+if(x == 0)
+i <- 0
+for(i in 0:1000){
+  v_T <- function( x, a, p, #new V_T__1)
+i <- i + 1
+}
+V_T <- max(v_T) 
+
+But was getting errors again, I knew what the concept but was not sure how to encode it. I then began by working backwards as I was not entirely sure how to code the function specific to the question. With this in mind, I managed to get somewhere but the function does not give the correct answer for x = ath iteration but the rest of the code seem to ourut correct values and without any error signs.
+
+I later realised that I was getting an output of numeric (0) as I was considering V[0] to be V[1] but then i realised the first entry in a vector is considered the 0th entry. So rectify this; I added '+ 1' inside the V[x + a] and V[x - a]
+
+##(e)
+```{r}
+x.list <- list()
+a.list <- list()
+v_1..list <- list()
+
+n <- 1
+m <- 1
+o <- 1
+
+p <- 0.4
+
+for(x in 1:9){
+  for(a in 1:x){
+  V1. <- V[x + a + 1]
+  V2. <- V[x - a + 1]
+  v_1. <- p*V1. + (1-p)*V2.
+  x.list [[n]] <- x
+  a.list [[m]] <- a
+  v_1..list [[o]] <- v_1.
+  n <- n + 1
+  m <- m + 1
+  o <- o + 1
+  }
+}
+x.list. <- unlist(x.list)
+a.list. <- unlist(a.list)
+v_1..list. <- unlist(v_1..list)
+
+pairs <- cbind(x.list., a.list., v_1..list.)
+pairs <- as.matrix(pairs)
+pairs
+```
+
+##(f)
+I have set the action set to be the integer values included between 1 and given x and a is an element of this set.
+
+I now applied the same principle to that inside the function to all (x, a) pairs. I then have made a row of values with the corresponding x, a, and W values.
+
+I began by trying to code the problem backward but got many errors.
+
+max.list <- list()
+#q <- 1
+#for(x.list. in 1:9){
+  #for(a.list. in sum():x.list.)
+ # max.list <- max(pairs[, 3])
+  #q <- q + 1
+#}
+#max.list
+
+q <- 1
+for(pairs[,1] = 1){
+  max.list[[q]] <- max(x.list.)
+  q <- q + 1
+}
+
+I tried to incorporate the function into the loop but 
+for(x in 1:9){
+  f <- function(x, p, V)
+  
+    V1. <- V[x + a + 1]
+  V2. <- V[x - a + 1]
+  v_1. <- p*V1. + (1-p)*V2.
+  x.list [[n]] <- x
+  a.list [[m]] <- a
+  v_1..list [[o]] <- v_1.
+  n <- n + 1
+  m <- m + 1
+  o <- o + 1
+  }
+x.list. <- unlist(x.list)
+a.list. <- unlist(a.list)
+v_1..list. <- unlist(v_1..list)
+
+I did not get any output which I was surprised about as the earlier function did give an output.
+
+I then tried a different method with the following code
+
+h$max
+outcomes <- unlist(h$list.)
+best <- which(outcomes == h$max, arr.ind = TRUE, useNames = FALSE)
+
+but I was not sure how to find the best value which the which function returns. I then remembered that my ealier code returns the max value so I was just a matter of adding this code into the for loop. I am simpley making sure the constraints are fulfilled by checking the flow is consistent.
+
+```{r}
+b <- c()
+d <- 1
+
+extracted.rows <- as.matrix(pairs[pairs[,1]==1, ])
+max <- max(extracted.rows[3, 1])
+b[d] <- max
+d <- d + 1
+
+d <- 2
+for(i in 2:9){
+  extracted.rows <- as.matrix(pairs[pairs[,1]==i, ])
+  max <- max(extracted.rows[, 3])
+  b[d] <- max
+  d <- d + 1
+}
+
+b
+```
+
+pairs$v_1..list Did not work and after researching I remembered to extract rows and columns from matrices we use square brackets.
+
+These were my two attempts at trying to extract the maximum for each x value
+max.list <- list()
+q <- 1
+for(x.list. in 1:9){
+  for(a.list. in sum():x.list.)
+  max.list <- max(pairs[, 3])
+  q <- q + 1
+}
+max.list
+
+
+q <- 1
+for(pairs[,1] = 1){
+  max.list[[q]] <- max(x.list.)
+  q <- q + 1
+}
+
+They did not output the values I wanted so I asked for help with how to extract the set where all xs are the same.
+
+I then tried using which function but I kept getting the same error but when I took it out of the loop it worked. I realised that the first iteration returns it as a single vector which only has one column and for me to transpose this, it would affect the rest of the xs in 2:6
+
+##(g)
+This part of the question would be using the max value found in the earlier part of the question and storing the values to replace the current na values in vector W. This would posibly be done by the following.
+```{r}
+k <- 2
+for(k in 2:10){
+  W [k] <- b[k - 1]
+  k <- k + 1
+}
+W
+```
+
+I managed to get part (f) working so I now so I have edited the code to reflect the variable names I have used. I have now put the values of b into the na values from vector W.
+
+
+####Hunayn####
+
+
+```{r}
+M <- matrix(0, nrow = 7, ncol = 7)
+M [1, 2] <- 12
+M [1, 3] <- 10
+M [1, 4] <- 18
+M [2, 3] <- 5
+M [2, 5] <- 9
+M [3, 4] <- 9
+M [3, 5] <- 10
+M [3, 6] <- 12
+M [4, 6] <- 12
+M [5, 6] <- 10
+M [5, 7] <- 7
+M [6, 7] <- 25
+M
+
+f.matrix <- matrix(0, nrow = 7, ncol = 7)
+
+f.matrix [1, 2] <- 8
+f.matrix [1, 3] <- 5
+f.matrix [1, 4] <- 7
+f.matrix [2, 3] <- 4
+f.matrix [2, 5] <- 4
+f.matrix [3, 4] <- 0
+f.matrix [3, 5] <- 9
+f.matrix [3, 6] <- 0
+f.matrix [4, 6] <- 7
+f.matrix [5, 6] <- 10
+f.matrix [5, 7] <- 3
+f.matrix [6, 7] <- 17
+f.matrix
+
+f.matrix. <- f.matrix
+f.matrix. [1, 1] <- 20
+f.matrix. [7, 7] <- 20
+f.matrix.
+
+#adj.matrix <- matrix(0, nrow = 7, ncol = 7)
+#adj.matrix [1, 2] <- 1
+#adj.matrix [1, 3] <- 1
+#adj.matrix [1, 4] <- 1
+#adj.matrix [2, 3] <- 1
+#adj.matrix [2, 5] <- 1
+#adj.matrix [3, 4] <- 1
+#adj.matrix [3, 5] <- 1
+#adj.matrix [3, 6] <- 1
+#adj.matrix [4, 6] <- 1
+#adj.matrix [5, 6] <- 1
+#adj.matrix [5, 7] <- 1
+#adj.matrix [6, 7] <- 1
+
+#adj.matrix [2, 1] <- 1
+#adj.matrix [3, 1] <- 1
+#adj.matrix [4, 1] <- 1
+#adj.matrix [3, 2] <- 1
+#adj.matrix [5, 2] <- 1
+#adj.matrix [4, 3] <- 1
+#adj.matrix [5, 3] <- 1
+#adj.matrix [6, 3] <- 1
+#adj.matrix [6, 4] <- 1
+#adj.matrix [6, 5] <- 1
+#adj.matrix [7, 5] <- 1
+#adj.matrix [7, 6] <- 1
+#adj.matrix
+
+
+adj.matrix <- M
+for (i in 1:7){
+  for (j in 1:7){
+    if (adj.matrix[i, j] > 0){
+      adj.matrix [i, j] <- 1
+      }
+  }
+}
+adj.matrix
+```
+
+##A
+```{r}
+list.of.edges <- which(adj.matrix == 1, arr.ind = TRUE)
+list.of.edges
+list.of.edges. <- list.of.edges[sort.list(list.of.edges[, 1]), ]
+list.of.edges.
+```
+This would be useful with the Ford-Fulkerson algorithm as we need to know which paths are possible to add to the route.
+
+
+##B
+```{r}
+#f.matrix. <- f.matrix
+#f.matrix. [1, 1] <- 20
+#f.matrix. [7, 7] <- 20
+
+rows <- f.matrix.[1:7, 2:7]
+rows
+columns <- f.matrix.[1:6, 1:7]
+columns
+
+
+
+feasibility <- function(M, f.matrix, f.matrix., adj.matrix){
+  i <- 1
+  for(i in 1:7){
+  if(all(f.matrix <= M) & (all(sum(rows[i, ]) == sum(columns[, i]))) & (f.matrix.[1, 1] == f.matrix.[7, 7])){
+    return(print('feasible'))
+    }
+  else {
+    return(print('not feasible'))
+  }
+    i <- i + 1
+    }
+}
+
+feasibility(M, f.matrix, adj.matrix)
+```
+
+I have two conditions to check for feasibility so I will put them inside two separate if statements and then check that for any if statements which return 'feasible', there must be two 'feasible' returned for the flow to be be feasible.
+
+I then googled how to add multiple conditions to an if statement and the & did this. I then remembered that the flow in must equal the flow out so there was another final condition.
+
+I was not sure how to fully implement the conditions as the 7 x 7 matrix has some comlexities as we need to check rows 1:7 for the matrix f.matrix[1:7, 2:7] equal columns 1:6 for matrix f.matrix[1:6, 1:7].
+
+I then changed the values of the code to reflect these values.
+
+I then realised that the flow was still not feasible as I added this to my code
+f.matrix [1, 1] <- 20
+f.matrix [7, 7] <- 20
+which meant that I was using a different version of the M matrix.
+
+We need the flow to be feasible in order to use the Ford-Fulkerson algorithm. This is the first step for the algorithm.
+
+##Ci
+```{r}
+n <- 7
+V <- sample (1 : 7)
+V
+S <- c (4, 5, 6)
+S_c <- V[! V %in% S]
+S_c
+```
+
+This function which I found online after reasrching how to remove elements from a vector, removes elements, S, from vector V, to create vector S_c.
+
+We need to identfy which paths are already in S and which are in S_c so we know which we can add to S depending on whether flows are < the capacities for a flow and capacity which the path is from S and goes towards S_c. This cut relies on knowing whether they are in S or S_c.
+
+##Cii
+```{r}
+i <- 1
+list <- list()
+for(a in S_c){
+  which.edge <- which(a == list.of.edges.[1,])
+  list[[i]] <- which.edge
+  i <- i + 1
+}
+list
+
+#(1, 2), (1, 3), (2, 3)
+```
+
+I first attempted this
+which.edge <- which(S_c == list.of.edges[1,], arr.ind = TRUE)
+which.edge
+which gave one output which I knew to be wrong as they are meant to be #(1, 2), (1, 3), (2, 3)
+
+I then tried the following two attempted but they outputted strange answers but closer than before as I was receiving an error before.
+for(i in S_c){
+  which.edge <- which(i == list.of.edges.[1,])
+  return(which.edge)
+  
+  i <- 1
+list <- list()
+for(i in S_c){
+  which.edge <- which(i == list.of.edges.[1,])
+  list[[i]] <- which.edge
+  i <- i + 1
+}
+list
+
+This gives us the potential paths we can take to the route we are making. This is necessary as we need to be using valid paths.
+
+##D
+```{r}
+increase.flow <- min(M - f.matrix)
+increase.flow
+```
+
+The flow demonstrated here cannot be increased as the increase.flow output is 0.
+
+This ensures the flow is maximal and that it is optimized so that there is no more flow which can pass through the network.
+
+Elements which are not discussed are whether the flow moves the other way. Another element which is not discussed is the cuts between S and S_c.

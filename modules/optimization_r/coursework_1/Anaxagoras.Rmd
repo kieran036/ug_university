@@ -1,0 +1,167 @@
+---
+title: "Exercise3"
+author: "KieranPatel"
+date: "19/10/2017"
+output: html_document
+---
+
+```{r}
+library(lpSolve)
+```
+
+
+###Anaxagoras Coursework###
+
+
+##(i)
+```{r}
+f.obj1 <- c(1, 1)
+f.con1 <- matrix(c(1, 2, 3, 1), nrow = 2, byrow = TRUE)
+f.ineqs1 <- c("<=", "<=")
+f.rhs1 <- c(100, 75)
+lp("max", f.obj1, f.con1, f.ineqs1, f.rhs1)
+lp("max", f.obj1, f.con1, f.ineqs1, f.rhs1)$solution
+```
+The optimal solution is 10 chairs and 45 tables and the optimal solution is 55.
+
+
+
+##(ii)
+We augment the problem, as seen in the lecture notes.
+```{r}
+f.obj2 <- c(1, 1, 0, 0)
+#Where the 3th and 4th column are the coefficients of the slack variables s1 and s2
+f.con2 <- matrix(c(1, 2, 1, 0, 3, 1, 0, 1), nrow = 2, byrow = TRUE)
+#Where the 3rd, 4th, 5th and 6th column are the coefficients of the slack variables s1 and s2
+f.ineqs2 <- c("=", "=")
+f.rhs2 <- c(100, 75)
+lp("max", f.obj2, f.con2, f.ineqs2, f.rhs2)
+lp("max", f.obj2, f.con2, f.ineqs2, f.rhs2)$solution
+```
+
+I initially, wrote 'obj.2 <- c(1, 1)' which returned 'Error: no feasible solution found[1] 0 0'. I realised that I should have typed 'obj.2 <- c(1, 1, 0, 0)' as the slack variables have coefficients of zero in the objective function.
+This then returned the following response 'Success: the objective function is 1e+30 
+[1] 1e+30 0e+00 0e+00 0e+00' which I then realised was wrong as I did not include all of the constraints and had written the constraints wrong so I changed 'con.2 <- matrix(c(1, 2, 3, 1, 1, 1), nrow = 2, byrow = TRUE)' to 'con.2 <- matrix(c(1, 2, 1, 0, 3, 1, 0, 1), nrow = 2, byrow = TRUE)'.
+
+The optimum is the same as in (i) so it is verified. The slack variables both take zero at the optimum. We could have worked this out previously since if the optimal values of the chairs at 10 and tables at 45 are substituted into the constraints we can see the inequality hold and is tight so we already know the slack variables are zero.
+
+
+
+##(iii)
+f.obj3 <- c(1)
+f.con3 <- matrix(c(1, 3, 1), nrow = 1, byrow = TRUE)
+f.ineqs3 <- c("=", "=")
+f.rhs3 <- c(150)
+lp("max", f.obj3, f.con3, f.ineqs3, f.rhs3)
+lp("max", f.obj3, f.con3, f.ineqs3, f.rhs3)$solution
+
+
+obj.3 <- 1
+con.3 <- c(1, 3, 1)
+ineqs.3 <- "="
+rhs.3 <- 150
+lp("max", obj.3, con.3, ineqs.3, rhs.3)
+lp("max", obj.3, con.3, ineqs.3, rhs.3)$solution
+
+
+I did not realise I was supposed to add the constraint to the problem already in place in (ii).
+```{r}
+f.obj3 <- c(1, 1, 0, 0, 0)
+f.con3 <- matrix(c(1, 2, 1, 0, 0, 3, 1, 0, 1, 0, 1, 3, 0, 0, 1), nrow = 3, byrow = TRUE)
+f.ineqs3 <- c("=", "=", "=")
+f.rhs3 <- c(100, 75, 150)
+lp("max", f.obj3, f.con3, f.ineqs3, f.rhs3)
+lp("max", f.obj3, f.con3, f.ineqs3, f.rhs3)$solution
+```
+
+I simply, added a new constraint to the problem in (ii), it appears the constraint already in place from (ii) are stronger than the new constraint which is why the optimal solution for profit remains at the same value.
+
+
+
+##(iv)
+```{r}
+f.obj4 <- c(1, 1, 0, 0)
+x <- 99
+f.con4 <- matrix(c(1, 2, 1, 0, 3, 1, 0, 1), nrow = 2, byrow = TRUE)
+f.ineqs4 <- c("=", "=")
+  repeat{
+    f.rhs4 <- c(x, 75)
+    print(lp("max", f.obj4, f.con4, f.ineqs4, f.rhs4))
+    print(lp("max", f.obj4, f.con4, f.ineqs4, f.rhs4)$solution)
+    x <- x - 1
+    if (x == 0){
+      break}
+  }
+```
+
+I initially coded
+lp("max", f.obj41, f.con41, f.ineqs41, f.rhs41)
+lp("max", f.obj41, f.con41, f.ineqs41, f.rhs41)$ solution but the output was not printing out so I changed it to after researching how to use repeat loops in the internet.
+print(lp("max", f.obj41, f.con41, f.ineqs41, f.rhs41))
+print(lp("max", f.obj41, f.con41, f.ineqs41, f.rhs41)$solution)
+
+
+The optimum value decreases as the value of b1 decreases. The optimal basis changes for each value of b1 too where x1 increases by 0.2 up to x1 = 25 which is a tight condition and then it decreases by 1 for each decrease of 1 to b1. The value of x2 decreases by 0.6 for each single decrease in b1. The slack variable s1 does not change as b1 changes from 99 to 1, but s2 does begin to increase by 1 once the optimum value passes 25.
+
+
+
+##(v)
+
+f.obj5 <- c(1, 1, 0, 0)
+x <- -1
+f.con5 <- matrix(c(1, 2, 1, 0, 3, 1, 0, 1), nrow = 2, byrow = TRUE)
+f.ineqs5 <- c("=", "=")
+  repeat{
+    x <- x + 1
+    f.rhs5 <- c(x, 75)
+    ; if (.Last.value == lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)) break; print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5))
+    print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution)}
+
+
+I tried this as my code and had to terminate the output as it kept increasing to infinity and was at x2 = 75 and s1 = 1216 so this was not looking useful or correct.
+
+I am trying to create a loop which keeps increasing b1 by 1 until the optimal basis from the b1 = i - 1 is the same as the b1 = i and then I would like the output for this final solution to be printed.
+
+
+f.obj5 <- c(1, 1)
+x <- -1
+f.con5 <- matrix(c(1, 2, 3, 1), nrow = 2, byrow = TRUE)
+f.ineqs5 <- c("=", "=")
+  repeat{
+    x <- x + 1
+    f.rhs5 <- c(x, 75)
+    ; if (.Last.value == lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)) break; print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5))
+    print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution)}
+
+
+I then try and repeat the code but took out the slack variables as the output for the previous code I wrote kept increasing the slacks.
+
+
+
+f.obj5 <- c(1, 1, 0, 0)
+x <- -1
+f.con5 <- matrix(c(1, 2, 1, 0, 3, 1, 0, 1), nrow = 2, byrow = TRUE)
+f.ineqs5 <- c("=", "=")
+  repeat{
+    x <- x + 1
+    f.rhs5 <- c(x, 75)
+    ; if (a == lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution) break; print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5))
+    a <- lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution
+    print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution)}
+
+
+I then realised that I was checking the condition against the optimum value as opposed to the optimal basis, but this still does not return a relevant answer.
+
+
+f.obj5 <- c(1, 1)
+x <- -1
+f.con5 <- matrix(c(1, 2, 3, 1), nrow = 2, byrow = TRUE)
+f.ineqs5 <- c("=", "=")
+  repeat{
+    x <- x + 1
+    f.rhs5 <- c(x, 75)
+    ; if (.Last.value == lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution) break; print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5))
+    print(lp("max", f.obj5, f.con5, f.ineqs5, f.rhs5)$solution)}
+
+
+I then thought of removing the slacks to provide a more loose constraint but the same issue reappears. I was not able to progress further than this and given (vi) requires the data found from (v), I was not able to progress.

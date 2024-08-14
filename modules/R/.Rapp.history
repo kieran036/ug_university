@@ -1,0 +1,6 @@
+library(car)
+install.package('car')
+source("/Users/Kieran/Downloads/BabyData.txt")
+getwd()
+getwd()
+deb https://<my.favorite.cran.mirror>/bin/linux/ubuntu yakkety/

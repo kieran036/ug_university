@@ -1,0 +1,182 @@
+---
+title: "Zhang_Heng"
+author: "Kieran Patel"
+date: "02/11/2017"
+output: html_document
+---
+```{r}
+library(lpSolve)
+```
+
+
+####Zhang Heng Coursework####
+
+
+##(i)
+
+The dual problem is when the problem is changed into the lagrangian and maximised subject to lambda.
+
+##(ii)
+
+min $b^T \lambda  $ s.t. $A^T \lambda  \geq c$ for $\lambda  \geq 0$
+
+##(iii)
+```{r}
+#From p1-14
+max.or.min <- "max"
+c <- c(5, 10)
+b <- c(4, 6)
+A <- matrix(c(1, 2, 3, 1), nrow = length(c), byrow = TRUE)
+#A = constraint matrix, b = rhs, c = obj, lambda = vector of lambdas
+var <- length(c)
+ineqs <- rep("<=", var)
+
+dual.function <- function (A, b, c, ineqs, max.or.min){
+  A. <- t(A)
+  c. <- b
+  b. <- c
+  
+  if (all(ineqs == rep("<=", var)))
+    ineqs. <- rep(">=", var)
+    else("Problem does not match the question")
+  if (max.or.min == "max")
+  max.or.min. <- "min"
+    else("Problem does not match the question")
+  
+return( list (New.A = A., New.b = b., New.c = c., New.ineqs = ineqs., New.max.or.min = max.or.min.))
+  return(A., b., c., ineqs., max.or.min.)}
+
+W <- dual.function(A, b, c, ineqs, max.or.min)
+W
+
+#From p1-17
+c <- c(1, 2)
+b <- c(4, 6, 5, 5)
+A <- matrix(c(1, 2, 1, 1, 3, 2, 2, 3), ncol = length(c), byrow = TRUE)
+V <- dual.function(A, b, c, ineqs, max.or.min)
+V
+```
+
+rep.of.lambda <- rep ($A^T \lambda  \geq c$, var)
+lambda <- c(1: var)
+A.lambda <- t(A) #%*% lambda
+ineq <- rep(">=", var)
+dual <- cbind(A.lambda, ineq, x)
+
+My initial thought process was that we needed to replicate the problem so that the output looked the same as that in the notes but after rereading the coursework we were just being asked to change the primal problem into dual problem but making R make this change.
+
+
+I then typed this code for my loop if (ineqs = rep(">=", var)), which kept saying an error and I could not decipher the error until I read the hints sheet again and realised that a double equal, ==, asks R to determine if the statement is true or not.
+
+I attempted to use the all function to match my two vectors so the condition is satisfied with (all(ineqs == rep("<=", var), na.rm = FALSE) but this lead to an error. So i then tried all(ineqs) == all(rep("<=", var)), which gave another error. I then tried  if (all(ineqs == rep("<=", var)){ but pick up '{' as an error. I managed to sort the errors after researching examples of the all function.
+
+
+##(iv)
+```{r}
+#I have already set up variables in (iii) so that I can run my code and check it.
+#Primal problem optimal value
+primal.opt <- lp(max.or.min, c, A, ineqs, b)
+primal.opt
+
+#These are the dual problem's parameters
+W$New.c
+W$New.A
+W$New.ineqs
+W$New.b
+W$New.max.or.min
+
+dual.opt <- lp(W$New.max.or.min, W$New.c, W$New.A, W$New.ineqs, W$New.b)
+dual.opt
+```
+
+I initially typed, lp("min", New.c, New.A, New.ineqs, New.b), but then remembered that these variables are only exist within the function in (iii).
+
+I then try and find the dual problem's parameters with this code lp("min", c., A., ineqs., b.), but an error appears again. So I researched into how to store nd recall variables within a function as I recalled it being mentioned in the computing class and after googling I found it to be labeling variables with '<<-'. After speaking to the lecturer, I found this is bad programming and I could not recall my output simply because I was not labeling my output so I replaced the '<<-' to '<-'.
+
+Most of the code for this question has already been done in (iii) and the previous coursework.
+
+I then tried to create a for loop with {if (primal.opt = dual.opt)
+  "Optimals are the same"
+  else "Optimals are not the same"}
+but realised that because the outputs for the lp function are text and numbers that the if loop is too difficult.
+
+Both the optimal value for the primal and dual are the same as expected.
+
+##(v)
+```{r}
+primal.problem <- lp(max.or.min, c, A, ineqs, b)$solution
+primal.problem
+{if (all((A%*%primal.problem) == b))
+  "Constraint is tight for the primal problem"
+else "Constraint is not tight for the primal problem"}
+
+dual.problem <- lp(W$New.max.or.min, W$New.c, W$New.A, W$New.ineqs, W$New.b)$solution
+dual.problem
+{if (all((W$New.A%*%dual.problem) == W$New.b))
+  "Constraint is tight for the dual problem"
+else "Constraint is not tight for the dual problem"}
+```
+
+The output showed a similar error to earlier when I coded 'if ((primal.problem*A) <= b)
+  "Complementary Slackness holds"
+else "Complementary Slackness does not hold"'. So I included the 'all' function. But I am still having issues with the 'else' function.
+I then tried to create a complete loop, realising that the else appeared disjointed from the 'if' loop.
+
+I then realise I did the matrix multiplication the wrong way so I wasn't getting the right output. I then realised I was not using the matrix multiplication symbol.
+
+##(vi)
+```{r}
+max.or.min <- "min"
+c <- c(5, 10)
+b <- c(4, 6)
+A <- matrix(c(1, 2, 3, 1), nrow = length(c), byrow = TRUE)
+#A = constraint matrix, b = rhs, c = obj, lambda = vector of lambdas
+var <- length(c)
+ineqs <- rep(">=", var)
+
+dual.function <- function (A, b, c, ineqs, max.or.min){
+  A. <- t(A)
+  c. <- b
+  b. <- c
+  
+  if (all(ineqs == rep(">=", var)))
+    ineqs. <- rep("<=", var)
+    else("Problem does not match the question")
+  if (max.or.min == "min")
+  max.or.min. <- "max"
+    else("Problem does not match the question")
+  
+return( list (New.A = A., New.b = b., New.c = c., New.ineqs = ineqs., New.max.or.min = max.or.min.))
+  return(A., b., c., ineqs., max.or.min.)}
+
+P <- dual.function(A, b, c, ineqs, max.or.min)
+P
+
+primal.opt <- lp(max.or.min, c, A, ineqs, b)
+primal.opt
+
+#These are the dual problem's parameters
+
+P$New.max.or.min
+P$New.c
+P$New.A
+P$New.ineqs
+P$New.b
+
+dual.opt <- lp(P$New.max.or.min, P$New.c, P$New.A, P$New.ineqs, P$New.b)
+dual.opt
+
+primal.problem <- lp(max.or.min, c, A, ineqs, b)$solution
+primal.problem
+{if (all((A%*%primal.problem) == b))
+  "Constraint is tight for the primal problem"
+else "Constraint is not tight for the primal problem"}
+
+dual.problem <- lp(P$New.max.or.min, P$New.c, P$New.A, P$New.ineqs, P$New.b)$solution
+dual.problem
+{if (all((P$New.A%*%dual.problem) == P$New.b))
+  "Constraint is tight for the dual problem"
+else "Constraint is not tight for the dual problem"}
+```
+
+Here I have collated the code from the questions and then inversed the 'max' and 'min' and then inversed equality signs.

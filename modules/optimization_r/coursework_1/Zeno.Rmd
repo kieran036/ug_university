@@ -1,0 +1,184 @@
+---
+title: "Zeno"
+author: "Kieran Patel"
+date: "28/10/2017"
+output: html_document
+---
+
+
+####Zeno
+
+
+```{r}
+library(lpSolve)
+```
+
+```{r}
+bfs <- c(6, 4, 3)
+c <- c(2, 3)
+con <- rbind(c(1, 2), c(1, 1), c(1, 0))
+con
+```
+
+I have used application 2.3 as an example for this coursework Zeno.
+
+
+
+#(ai)
+I needed to code the number of constraints and then add these many slacks with coefficients of zero and after researching the repeat function, I found I can repeat zero a variable number of times. The nrow function sum the number of rows the matrix of constraints holds.
+
+I initially thought I was meant to augment the problem as we did during chapter 1 when we add the slack variables and the following code shows my attempt.
+
+y <- nrow(con)
+S <- rep(0, y)
+#S represents the slacks
+A <- cbind(con, S)
+A
+
+
+I attempted to augment the problem so it looks like it does in the initial tableau.
+y <- nrow(con)
+y
+S1 <- rep(0, y)
+S2 <- rep(0, y)
+S3 <- rep(0, y)
+A <- cbind(con, S1, S2, S3)
+A
+
+
+But the rows did not show an identity matrix in the slack rows. So I then researched the functions given in the hints section for Zeno and diag was the relevant function here.
+
+
+```{r}
+x <- length(c)
+y <- nrow(con)
+I <- diag(x = 1, nrow = y, ncol = y)
+s <- rep(0, y)
+c
+C <- c(c, s)
+C
+
+
+
+#(aii)
+
+A <- cbind(con, I)
+A. <- cbind(con, I, bfs)
+A.
+S <- rep(0, y)
+#Finding where the initial basis lies which is between x+1 and x+y
+X <- x + 1
+Y <- x + y
+B <- A[,c(X : Y)]
+B
+I.B <- c(X : Y)
+I.B
+
+cB <- C[c(X : Y)]
+cB
+bfs. <- x + y + 1
+BFS <- A.[,c(bfs.)]
+BFS
+```
+
+I tried this code initially but I kept getting errors
+I.B <- A[,c(x + 1 : x + y)]
+So I changed the input to separate variables, thinking the code had too much input to calculate at once. I used this example to determine what to do
+z <- diag (3)
+z[, c(2:3)]
+
+I then needed to find the coefficients of the initial basis so I needed to add on the coefficients of the slacks onto the c, the objective function. I found the code C <- cbind(c, s) did not work as the cbind function work for matrices only so I changed cbind to c.
+
+
+
+#(b)
+
+I am trying to rename the columns in the matrix so that they can be extracted in a way that once it is, it is more clear than column numbers. This was not working well I decided to remain with column names whereby the initial basis is the slacks which will begin from the Xth column (since X = x + 1)
+
+I tried renaming column names so that they read x1, x2,..., s1, s2,... using the following 
+q <- c('x', 1:x)
+w <- c('s', X:Y)
+r
+colnames(A) <- paste(r)
+colnames(A) <- paste('x',1:x)
+
+This came up with errors so I then thought I would try and research into strings but this did not get anywhere.
+
+```{r}
+A.
+Name <- c(1: Y)
+Name
+colnames (A.)[1:Y] <- paste (Name)
+A.
+#We now add cB and Basis to our matrix
+C. <- c("", "", C, "")
+#While it is not necessary to add this row onto the matrix, it helps with presentation
+C.
+A.. <- cbind(cB, I.B, A.)
+A... <- rbind(C., A..)
+A..
+A...
+```
+
+I decided to have another attempt to rename the columns for the variables. I initially used
+Name <- c(1: Y)
+Name
+names(A) <- Name
+colnames (A) <- paste (Name, 1:Y)
+
+and had to fiddle around which of these naming functions worked as I was getting an output that renames columns with '1 1' as opposed to a '1'. I eventually managed to fix it but tweaking the code and using one renaming method while turning the other into text for the time being with the #.
+
+
+I initially tried cB_T.M <- cB*A
+cB_T.M
+colSums (cB_T.M, na.rm = FALSE, dims = 1)
+
+
+While this works the same, the new code which I took from the hint sheet in the lecture notes mentions the use of %*% and it makes the code more compact
+```{r}
+cB_T.M <- (t(cB)) %*% (A)
+cB_T.M
+cB_T.BFS <- (t(cB))%*%BFS
+cB_T.BFS
+cB_T.M. <- cbind("Objective Row", "", cB_T.M, cB_T.BFS)
+cB_T.M.
+c__cB_T.M <- C - cB_T.M[1:Y]
+c__cB_T.M
+c__cB_T.M. <- cbind("Simplex Coefficients", "", t(c__cB_T.M), "")
+c__cB_T.M.
+A.... <- rbind (A..., cB_T.M., c__cB_T.M.)
+A.
+A..
+A...
+A....
+
+max <- which.max(t(c__cB_T.M))
+max
+```
+
+For some reason c__cB_T.M. <- cbind("Simplex Coefficients", "", c__cB_T.M, "")
+kept giving back c__cB_T.M. as a matrix as opposed to a row vector like cB_T.M., I then decided to transpose the c__cB_T.M vector and it managed to work.
+
+
+(c)
+```{r}
+#We know fro b what the given column is which is named max. The given column  can only be between the 3rd and 2+Y th columns but I am using an extrapolated version of the tableau, which is M in the notes so that if any columns which are not the variables are selected, an error message is displayed about the dimensions not matching eg. if var <- .A.[,6] we are shown 'Error in .A.[, 6] : subscript out of bounds'.
+
+.A. <- A.[, 1 : Y]
+.A.
+var <- A.[,max]
+Ratios <- BFS / var
+Ratios
+minpositive = function(x) min(x[x > 0])
+minpositive(Ratios)
+match (minpositive(Ratios), Ratios)
+```
+
+var <- .A.[,3]
+This was my initial code for the given column but I realised that the given column depends on the maximum value of the objective 
+
+I was then finding the ratios to find the largest of these so we can compute which is the pivot row.
+
+The issue with using which.min is that this function has limitations in that the minimum may be negative or zero but we need the smallest nonzero value. The current code has fewer limitations, however, 'inf' may be shown if all ratios are all infinity.
+
+The match function returns the row for which the minimum positive value of the ratios relate to and this row is the pivot row. I knew of the match function after similarly working with Excel and understanding its match function which returns the cell coordinates for the first match of the conditions.

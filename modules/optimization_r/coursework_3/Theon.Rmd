@@ -1,0 +1,149 @@
+---
+title: "Theon"
+author: "Kieran Patel"
+date: "23/11/2017"
+output: html_document
+---
+
+
+####Theon Coursework####
+
+
+##(a)
+```{r}
+RegA <- cbind(t(seq(0, 20, by = 1)), 25)
+RegB <- cbind(t(seq(2, 40, by = 2)), 50)
+RegC <- seq(3, 60, by = 3)
+#Start off by making the sets A, B, and C as described in the coursework
+
+actions <- function(x, A, B, C){
+  unionAC <- union(A, C)
+  unionABC <- union(unionAC, B)
+  #The union function cannot union more than 2 sets at once.
+  
+  if ((is.element(x, B)) == TRUE){
+    A_x <- unionABC[unionABC <= x]
+    }
+else
+  A_x <- unionABC[unionABC < x]
+  A__x <- sort(A_x, decreasing = FALSE)
+  return (A__x)
+}
+#This displays the action set values which are less than x but also determines whether to include the value of x if x is a subset of set B.
+
+actions (4, RegA, RegB, RegC)
+```
+
+I tried to create a subset of the union set after researching, but I was not able to replicate the code used in the examples online after coding   newdata <- subset(union | x < union).
+
+I then tried to code it in a different way but this did not get far   for (a in union)
+    union. <- union[union < x]
+
+I then tried to to make it so my code tells me if it is set B with the following code   if.contains <- x contains(value = x, B)
+but it did not work, I think I needed to install a package but I could not find the name.
+
+I then tried     if.contains <- (x %in% B) but an error came up saying I cannot do do as many calculations in one go.
+
+```{r}
+V <- function (A, B, C, n, x){
+  
+  Actions <- actions (x, A, B, C)
+  
+  for (a in Actions){
+     if (a == 0){
+      reward <- 0
+      #This relates to n not changing by any value
+      }
+    else {
+      reward <- -1
+      #This relates to n decreasing by 1 for every dart thrown and the sum of the rewards will denote how may optimal takes it will tak to reach the score.
+      }
+    
+    if (n == 0){
+      if (x == 0){
+      V_0 <- 0}
+      #Here we need to impose the boundary conditions.
+      #For n equal to zero and x equal to zero the terminal reward is zero.
+      if (x > 0)
+      V_0 <- -100
+      #For n equal to zero and x greater than zero then we let the terminal reward be negative 100 as this makes it easier when we are finding the maximum number of takes needed to reach the score x. This value is an arbitrarily large number so that it is not considereed with the number of darts taken.
+    return ( V_0)}
+    else {
+      V_n.1 <- V(A, B, C, n - 1, x - a)
+      V_n <- reward + V_n.1
+      #For n not equal to zero then we find use the optimality equation as shown in the notes.
+      list <- list()
+      #I want to make an empt list so that the for loop fills up the list
+      i <- 1
+      list [[i]] <- V_n
+      #The possible solutions are then inputted into the list and then unlisted and then the maximum is being found.
+      i <- i + 1
+      m <- unlist(list)
+      Max <- max(m)}
+    return (Max)}}
+
+
+V(A, B, C, 2, 20)
+```
+      
+      
+      }
+  }
+  return (V_n)}
+  
+  #for (n in 1:n){
+   # for (a in Actions){
+   #   V_n.1 <- V(A, B, C, n - 1, x - a)} }
+    
+   # V <- max(reward[a] + V_n.1 ) }
+
+  
+
+V(A, B, C, 12, 20)
+
+
+State - A U B U C
+Time steps - n time steps
+Action - {A__x}
+Rewards - fewest number of steps OR minimum number of steps
+Evolution - x minus f(A, B, C, n, x)
+Value function - 
+
+
+ for (n in 2:n){
+    f. <- f(A, B, C, n - 1)
+    n <- n - 1}
+  if (n == 1){
+    action_final <- actions$A__x[actions$A__x <= B] 
+  }}
+  #actions$A__x
+  
+  I tried to code that the last Action set needs to be a subset of B.
+  
+  
+   for (i in Actions){
+      }}
+    #return (reward)
+  
+  for (i in 1:n){}
+  V_n <- max(R ) 
+
+
+    for (i in 1:n){
+      for (i in Actions){
+    if (i == 0){
+      reward <- 0}
+    else {
+      reward < -1
+    }}
+  }
+  V_n <- max(reward[i] ) 
+  
+  These are my different attempts to try and code the function.
+  
+  I then kept getting difficulties with reordering the code and whether to put it in which for loop.
+
+
+I had to comment out the example when using my code as it was taking a very long time to knit and I was not able to figure out why it was taking this long.
+
+I struggled a fair amount during part (b) of this coursework. My though process during this coursework was to find the Action Set which is the set of values which someone can take, given they are at x. After several attempts and reordering in part (b), I coded the optimality equation but it does not seem to be working fully and after shifting the code around as well as adding small pieces of code I kept getting that many of my variables came back as 'object not found'. I eventually managed to output a '-100' which I although know is not correct, it was further than I was originally at. I feel I understand what I am trying to do throughout this process but I cannot put it into a full set of working code.
